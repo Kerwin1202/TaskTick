@@ -245,13 +245,10 @@ struct QuickLauncherView: View {
         .padding(.horizontal, 11)
         .padding(.vertical, 7)
         .background(
-            // `Color.black.opacity(0.18)` was tuned for dark mode and turned
-            // light mode into a heavy gray box. `.primary.opacity(0.04)`
-            // adapts: 4% black on light = barely there, 4% white on dark =
-            // gentle inset hint. The blue focus ring still does the heavy
-            // lifting of telegraphing where focus is.
+            // The outer panel uses a behind-window material, so keep this
+            // input surface opaque to prevent background content showing through.
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.primary.opacity(0.04))
+                .fill(Color(nsColor: .windowBackgroundColor))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
@@ -314,6 +311,7 @@ struct QuickLauncherView: View {
             kbdHint(keys: ["↵"], label: L10n.tr("quick_launcher.hint.activate"))
             kbdHint(keys: ["⇥"], label: L10n.tr("quick_launcher.hint.actions"))
             kbdHint(keys: ["⌘", "O"], label: L10n.tr("quick_launcher.hint.reveal"))
+            kbdHint(keys: ["⌘", ","], label: L10n.tr("quick_launcher.hint.settings"))
             kbdHint(keys: ["esc"], label: L10n.tr("quick_launcher.hint.close"))
             Spacer()
         }
@@ -372,7 +370,7 @@ struct QuickLauncherView: View {
         switch action {
         case .runStop: runSelected()
         case .logs: openSelectedLogs()
-        case .settings: openSettings()
+        case .settings: revealSelected()
         case .restart: restartSelected()
         }
     }
