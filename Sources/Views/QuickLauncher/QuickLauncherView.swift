@@ -461,27 +461,9 @@ private struct QuickLauncherRow: View {
 
             Spacer(minLength: 6)
 
-            if isSelected {
-                let stopColor = Color(red: 0.78, green: 0.32, blue: 0.30)
-                Text(isRunning
-                     ? L10n.tr("quick_launcher.action.stop")
-                     : L10n.tr("quick_launcher.action.run"))
-                    .font(.system(size: 10.5, weight: .semibold))
-                    // Tone down the stop red — system `.red` blasts out in
-                    // light mode against the soft panel surface. A muted
-                    // brick reads as "warning" without the eye strain.
-                    .foregroundStyle(isRunning ? stopColor : Color.accentColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(
-                        Capsule().fill(Color.primary.opacity(0.08))
-                    )
-            } else if isRunning {
-                // While a task is mid-flight the "X minutes ago" label is
-                // misleading — that's the *last completed* run, not the live
-                // one. Show elapsed time since the current run started, ticking
-                // every second. Shares its data source (running ExecutionLog's
-                // startedAt) with the detail-page schedule card.
+            if isRunning {
+                // Keep the live duration visible beside the action pill so a
+                // selected running task still shows how long it has run.
                 if let startedAt = RunningDuration.startedAt(for: task) {
                     TimelineView(.periodic(from: .now, by: 1.0)) { context in
                         Text(L10n.tr(
@@ -493,14 +475,11 @@ private struct QuickLauncherRow: View {
                         .monospacedDigit()
                     }
                 } else {
-                    // Fallback for the brief race where runningTaskIDs has
-                    // already been flipped but the ExecutionLog hasn't
-                    // hit disk yet.
                     Text(L10n.tr("quick_launcher.meta.running"))
                         .font(.system(size: 11))
                         .foregroundStyle(.green)
                 }
-            } else if let lastRun = task.lastRunAt {
+            } else if !isSelected, let lastRun = task.lastRunAt {
                 // Right-edge meta: "Xm ago". Only shown for unselected rows
                 // so the action pill on the selected row stays the visual
                 // anchor — same trick Raycast / Spotlight use.
@@ -516,6 +495,23 @@ private struct QuickLauncherRow: View {
                 }
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
+            }
+
+            if isSelected {
+                let stopColor = Color(red: 0.78, green: 0.32, blue: 0.30)
+                Text(isRunning
+                     ? L10n.tr("quick_launcher.action.stop")
+                     : L10n.tr("quick_launcher.action.run"))
+                    .font(.system(size: 10.5, weight: .semibold))
+                    // Tone down the stop red — system `.red` blasts out in
+                    // light mode against the soft panel surface. A muted
+                    // brick reads as "warning" without the eye strain.
+                    .foregroundStyle(isRunning ? stopColor : Color.accentColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule().fill(Color.primary.opacity(0.08))
+                    )
             }
         }
         .padding(.horizontal, 10)

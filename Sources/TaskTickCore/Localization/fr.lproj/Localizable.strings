@@ -60,7 +60,6 @@
 "editor.tab.basic" = "Général";
 "editor.tab.schedule" = "Planification";
 "editor.tab.script" = "Commande";
-"editor.tab.settings" = "Paramètres";
 "editor.tab.notification" = "Notifications";
 "editor.tab.push" = "Push";
 "editor.title.new" = "Nouvelle tâche";
@@ -102,9 +101,10 @@
 "editor.working_dir.placeholder" = "Chemin du répertoire de travail (facultatif)";
 "editor.working_dir.choose" = "Choisir un répertoire";
 "editor.timeout" = "Délai d'expiration";
+"editor.timeout.enable" = "Activer le délai d’expiration";
 "editor.timeout.seconds" = "secondes";
 "editor.timeout.unlimited" = "sans délai";
-"editor.timeout.hint" = "Saisissez -1 (ou un nombre négatif) pour désactiver le délai — le script s'exécute jusqu'à ce qu'il se termine de lui-même ou soit arrêté manuellement. Utile pour les serveurs de développement et autres processus de longue durée.";
+"editor.timeout.hint" = "Désactivé par défaut. Une fois activé, le délai est initialement de 300 secondes.";
 "editor.ignore_exit_code" = "Ignorer le code de sortie";
 "editor.ignore_exit_code.hint" = "Lorsque cette option est activée, la tâche est considérée comme réussie quel que soit le code de sortie du script. Utile pour les scripts qui renvoient des codes non nuls en fin d'exécution normale.";
 "editor.pre_run.section" = "Commande de pré-exécution";
@@ -345,8 +345,6 @@
 "settings.general.notify_on_hide" = "Notifier lors du masquage dans la barre des menus";
 "settings.general.defaults" = "Paramètres par défaut";
 "settings.general.default_shell" = "Shell par défaut";
-"settings.general.default_timeout" = "Délai d'expiration par défaut";
-"settings.general.seconds" = "secondes";
 "settings.notifications" = "Notifications";
 "settings.notifications.section" = "Paramètres de notification";
 "settings.notifications.enable" = "Activer les notifications";

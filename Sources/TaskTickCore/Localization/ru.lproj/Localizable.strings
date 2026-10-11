@@ -66,7 +66,6 @@
 "editor.tab.basic" = "Основное";
 "editor.tab.schedule" = "Расписание";
 "editor.tab.script" = "Команда";
-"editor.tab.settings" = "Настройки";
 "editor.tab.notification" = "Уведомления";
 "editor.tab.push" = "Push";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "Необязательный путь к рабочей директории";
 "editor.working_dir.choose" = "Выбрать директорию";
 "editor.timeout" = "Тайм-аут";
+"editor.timeout.enable" = "Включить тайм-аут";
 "editor.timeout.seconds" = "секунд";
 "editor.timeout.unlimited" = "без тайм-аута";
-"editor.timeout.hint" = "Введите -1 (или любое отрицательное число), чтобы отключить тайм-аут — скрипт будет работать, пока не завершится сам или не будет остановлен вручную. Удобно для dev-серверов и других долгоживущих процессов.";
+"editor.timeout.hint" = "По умолчанию выключен. После включения начальное значение — 300 секунд.";
 "editor.ignore_exit_code" = "Игнорировать код выхода";
 "editor.ignore_exit_code.hint" = "Если включено, задача считается успешной независимо от кода выхода скрипта. Удобно для скриптов, которые возвращают ненулевой код при штатном завершении.";
 "editor.pre_run.section" = "Команда перед запуском";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "Уведомлять при сворачивании в строку меню";
 "settings.general.defaults" = "Значения по умолчанию";
 "settings.general.default_shell" = "Shell по умолчанию";
-"settings.general.default_timeout" = "Тайм-аут по умолчанию";
-"settings.general.seconds" = "секунд";
 
 "settings.notifications" = "Уведомления";
 "settings.notifications.section" = "Настройки уведомлений";

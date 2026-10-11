@@ -66,7 +66,6 @@
 "editor.tab.basic" = "基本";
 "editor.tab.schedule" = "スケジュール";
 "editor.tab.script" = "コマンド";
-"editor.tab.settings" = "設定";
 "editor.tab.notification" = "通知";
 "editor.tab.push" = "プッシュ";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "作業ディレクトリのパス（任意）";
 "editor.working_dir.choose" = "ディレクトリを選択";
 "editor.timeout" = "タイムアウト";
+"editor.timeout.enable" = "タイムアウトを有効にする";
 "editor.timeout.seconds" = "秒";
 "editor.timeout.unlimited" = "タイムアウトなし";
-"editor.timeout.hint" = "-1（または任意の負の値）を入力するとタイムアウトしません。スクリプトは自然終了するか手動で停止するまで実行され続けます。dev サーバーなどの長時間実行プロセスに便利です。";
+"editor.timeout.hint" = "デフォルトでは無効です。有効にすると、初期値は 300 秒です。";
 "editor.ignore_exit_code" = "終了コードを無視";
 "editor.ignore_exit_code.hint" = "有効にすると、スクリプトの exit code に関わらずタスクは成功として扱われます。正常終了でも非ゼロの exit code を返すスクリプトに便利です。";
 "editor.pre_run.section" = "事前実行コマンド";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "メニューバーに隠したときに通知";
 "settings.general.defaults" = "デフォルト";
 "settings.general.default_shell" = "デフォルトシェル";
-"settings.general.default_timeout" = "デフォルトタイムアウト";
-"settings.general.seconds" = "秒";
 
 "settings.notifications" = "通知";
 "settings.notifications.section" = "通知設定";

@@ -294,7 +294,7 @@ public final class ScheduledTask {
         isEnabled: Bool = true,
         workingDirectory: String? = nil,
         environmentVariablesJSON: String? = nil,
-        timeoutSeconds: Int = 300,
+        timeoutSeconds: Int = -1,
         notifyOnSuccess: Bool = true,
         notifyOnFailure: Bool = true
     ) {

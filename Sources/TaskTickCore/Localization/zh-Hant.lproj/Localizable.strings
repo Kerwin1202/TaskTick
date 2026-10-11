@@ -66,7 +66,6 @@
 "editor.tab.basic" = "基本";
 "editor.tab.schedule" = "排程";
 "editor.tab.script" = "命令";
-"editor.tab.settings" = "設定";
 "editor.tab.notification" = "通知";
 "editor.tab.push" = "推播";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "可選的工作目錄路徑";
 "editor.working_dir.choose" = "選擇目錄";
 "editor.timeout" = "逾時時間";
+"editor.timeout.enable" = "啟用逾時";
 "editor.timeout.seconds" = "秒";
 "editor.timeout.unlimited" = "永不逾時";
-"editor.timeout.hint" = "填 -1（或任意負數）表示永不逾時，指令稿會一直執行直到自然結束或被手動停止。適合 dev server 等需要常駐的處理程序。";
+"editor.timeout.hint" = "預設關閉。啟用後預設逾時時間為 300 秒。";
 "editor.ignore_exit_code" = "忽略退出碼";
 "editor.ignore_exit_code.hint" = "啟用後，無論指令稿的退出碼為何，任務都會視為成功。適用於正常完成但會回傳非零退出碼的指令稿。";
 "editor.pre_run.section" = "前置命令";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "隱藏到選單列時通知";
 "settings.general.defaults" = "預設值";
 "settings.general.default_shell" = "預設 Shell";
-"settings.general.default_timeout" = "預設逾時";
-"settings.general.seconds" = "秒";
 
 "settings.notifications" = "通知";
 "settings.notifications.section" = "通知設定";

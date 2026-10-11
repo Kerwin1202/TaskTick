@@ -66,7 +66,7 @@ struct TaskEditorView: View {
     @State private var preRunCommand = ""
     @State private var preRunEnabled = false
     @State private var workingDirectory = ""
-    @State private var timeoutSeconds = 300
+    @State private var timeoutSeconds = -1
 
     // Shortcut (source == .shortcut)
     @State private var shortcutName: String = ""
@@ -162,7 +162,6 @@ struct TaskEditorView: View {
         case basic = "editor.tab.basic"
         case script = "editor.tab.script"
         case schedule = "editor.tab.schedule"
-        case settings = "editor.tab.settings"
         case notification = "editor.tab.notification"
         case push = "editor.tab.push"
 
@@ -173,7 +172,6 @@ struct TaskEditorView: View {
             case .basic: return "square.and.pencil"
             case .script: return "terminal"
             case .schedule: return "calendar.badge.clock"
-            case .settings: return "gearshape"
             case .notification: return "bell"
             case .push: return "paperplane"
             }
@@ -193,10 +191,6 @@ struct TaskEditorView: View {
             scheduleTab
                 .tabItem { Label(Tab.schedule.title, systemImage: Tab.schedule.symbol) }
                 .tag(Tab.schedule)
-
-            scriptSettingsTab
-                .tabItem { Label(Tab.settings.title, systemImage: Tab.settings.symbol) }
-                .tag(Tab.settings)
 
             notificationTab
                 .tabItem { Label(Tab.notification.title, systemImage: Tab.notification.symbol) }
@@ -577,6 +571,18 @@ struct TaskEditorView: View {
     private var scriptContentTab: some View {
         Form {
             if scriptSource != .shortcut {
+                Section(L10n.tr("editor.section.script")) {
+                    Picker(L10n.tr("editor.shell"), selection: $shell) {
+                        ForEach(AvailableShells.load(including: shell), id: \.self) { s in
+                            Text(s).tag(s)
+                        }
+                    }
+
+                    WorkingDirectoryField(path: $workingDirectory)
+                }
+            }
+
+            if scriptSource != .shortcut {
                 Section {
                     Toggle(L10n.tr("editor.pre_run.enable"), isOn: $preRunEnabled)
                         .onChange(of: preRunEnabled) { _, on in
@@ -677,51 +683,21 @@ struct TaskEditorView: View {
                 }
             }
 
-        }
-        .formStyle(.grouped)
-        .groupedFormSizing(minHeight: 388)
-        .alert(L10n.tr("template.overwrite.title"), isPresented: $showingTemplateOverwriteConfirm) {
-            Button(L10n.tr("editor.cancel"), role: .cancel) {
-                pendingTemplate = nil
-            }
-            Button(L10n.tr("template.overwrite.confirm"), role: .destructive) {
-                if let template = pendingTemplate {
-                    applyTemplate(template)
-                }
-                pendingTemplate = nil
-            }
-        } message: {
-            Text(L10n.tr("template.overwrite.message"))
-        }
-    }
-
-    // MARK: - Script Settings Tab
-
-    private var scriptSettingsTab: some View {
-        Form {
-            if scriptSource != .shortcut {
-                Section(L10n.tr("editor.section.script")) {
-                    Picker(L10n.tr("editor.shell"), selection: $shell) {
-                        ForEach(AvailableShells.load(including: shell), id: \.self) { s in
-                            Text(s).tag(s)
-                        }
-                    }
-
-                    WorkingDirectoryField(path: $workingDirectory)
-                }
-            }
-
             Section {
-                LabeledContent(L10n.tr("editor.timeout")) {
-                    HStack(spacing: 6) {
-                        TextField("", value: $timeoutSeconds, format: .number)
-                            .textFieldStyle(.roundedBorder)
-                            .frame(width: 80)
-                            .multilineTextAlignment(.trailing)
-                        if timeoutSeconds <= 0 {
-                            Text(L10n.tr("editor.timeout.unlimited"))
-                                .foregroundStyle(.secondary)
-                        } else {
+                Toggle(isOn: Binding(
+                    get: { timeoutSeconds > 0 },
+                    set: { enabled in timeoutSeconds = enabled ? 300 : -1 }
+                )) {
+                    Text(L10n.tr("editor.timeout.enable"))
+                }
+
+                if timeoutSeconds > 0 {
+                    LabeledContent(L10n.tr("editor.timeout")) {
+                        HStack(spacing: 6) {
+                            TextField("", value: $timeoutSeconds, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 80)
+                                .multilineTextAlignment(.trailing)
                             Text(L10n.tr("editor.timeout.seconds"))
                                 .foregroundStyle(.secondary)
                         }
@@ -738,7 +714,20 @@ struct TaskEditorView: View {
             }
         }
         .formStyle(.grouped)
-        .groupedFormSizing(minHeight: 337)
+        .groupedFormSizing(minHeight: 460)
+        .alert(L10n.tr("template.overwrite.title"), isPresented: $showingTemplateOverwriteConfirm) {
+            Button(L10n.tr("editor.cancel"), role: .cancel) {
+                pendingTemplate = nil
+            }
+            Button(L10n.tr("template.overwrite.confirm"), role: .destructive) {
+                if let template = pendingTemplate {
+                    applyTemplate(template)
+                }
+                pendingTemplate = nil
+            }
+        } message: {
+            Text(L10n.tr("template.overwrite.message"))
+        }
     }
 
     // MARK: - Template Picker
@@ -1365,7 +1354,7 @@ struct TaskEditorView: View {
         preRunCommand = ""
         preRunEnabled = false
         workingDirectory = ""
-        timeoutSeconds = 300
+        timeoutSeconds = -1
         shortcutName = ""
         availableShortcuts = []
         isLoadingShortcuts = false

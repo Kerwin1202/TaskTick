@@ -66,7 +66,6 @@
 "editor.tab.basic" = "Básico";
 "editor.tab.schedule" = "Programación";
 "editor.tab.script" = "Comando";
-"editor.tab.settings" = "Ajustes";
 "editor.tab.notification" = "Notificaciones";
 "editor.tab.push" = "Push";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "Ruta del directorio de trabajo (opcional)";
 "editor.working_dir.choose" = "Elegir directorio";
 "editor.timeout" = "Tiempo límite";
+"editor.timeout.enable" = "Activar tiempo límite";
 "editor.timeout.seconds" = "segundos";
 "editor.timeout.unlimited" = "sin tiempo límite";
-"editor.timeout.hint" = "Introduce -1 (o cualquier número negativo) para desactivar el tiempo límite — el script se ejecutará hasta que termine por sí mismo o lo detengas manualmente. Útil para servidores de desarrollo y otros procesos de larga duración.";
+"editor.timeout.hint" = "Desactivado de forma predeterminada. Al activarlo, comienza en 300 segundos.";
 "editor.ignore_exit_code" = "Ignorar código de salida";
 "editor.ignore_exit_code.hint" = "Al activarse, la tarea se considera exitosa independientemente del código de salida del script. Útil para scripts que devuelven códigos distintos de cero al finalizar con normalidad.";
 "editor.pre_run.section" = "Comando previo a la ejecución";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "Avisar al ocultar en la barra de menús";
 "settings.general.defaults" = "Valores predeterminados";
 "settings.general.default_shell" = "Shell predeterminado";
-"settings.general.default_timeout" = "Tiempo límite predeterminado";
-"settings.general.seconds" = "segundos";
 
 "settings.notifications" = "Notificaciones";
 "settings.notifications.section" = "Configuración de notificaciones";

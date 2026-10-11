@@ -66,7 +66,6 @@
 "editor.tab.basic" = "Basic";
 "editor.tab.schedule" = "Schedule";
 "editor.tab.script" = "Command";
-"editor.tab.settings" = "Settings";
 "editor.tab.notification" = "Notifications";
 "editor.tab.push" = "Push";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "Optional working directory path";
 "editor.working_dir.choose" = "Choose Directory";
 "editor.timeout" = "Timeout";
+"editor.timeout.enable" = "Enable timeout";
 "editor.timeout.seconds" = "seconds";
 "editor.timeout.unlimited" = "no timeout";
-"editor.timeout.hint" = "Enter -1 (or any negative number) for no timeout — the script runs until it exits on its own or is stopped manually. Useful for dev servers and other long-running processes.";
+"editor.timeout.hint" = "Disabled by default. When enabled, the timeout starts at 300 seconds.";
 "editor.ignore_exit_code" = "Ignore Exit Code";
 "editor.ignore_exit_code.hint" = "When enabled, the task is treated as successful regardless of the script's exit code. Useful for scripts that return non-zero codes on normal completion.";
 "editor.pre_run.section" = "Pre-Run Command";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "Notify when hidden in the menu bar";
 "settings.general.defaults" = "Defaults";
 "settings.general.default_shell" = "Default Shell";
-"settings.general.default_timeout" = "Default Timeout";
-"settings.general.seconds" = "seconds";
 
 "settings.notifications" = "Notifications";
 "settings.notifications.section" = "Notification Settings";

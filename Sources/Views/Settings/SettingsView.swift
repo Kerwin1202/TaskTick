@@ -8,7 +8,6 @@ struct SettingsView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @ObservedObject private var quickLauncherSettings = QuickLauncherSettings.shared
     @AppStorage("defaultShell") private var defaultShell = "/bin/zsh"
-    @AppStorage("defaultTimeout") private var defaultTimeout = 300
     @AppStorage("appearanceMode") private var appearanceMode = "system"
     @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
 
@@ -184,17 +183,6 @@ struct SettingsView: View {
                 Picker(L10n.tr("settings.general.default_shell"), selection: $defaultShell) {
                     ForEach(AvailableShells.load(including: defaultShell), id: \.self) { shell in
                         Text(shell).tag(shell)
-                    }
-                }
-
-                LabeledContent(L10n.tr("settings.general.default_timeout")) {
-                    HStack(spacing: 6) {
-                        TextField("", value: $defaultTimeout, format: .number)
-                            .textFieldStyle(.roundedBorder)
-                            .frame(width: 70)
-                            .multilineTextAlignment(.trailing)
-                        Text(L10n.tr("settings.general.seconds"))
-                            .foregroundStyle(.secondary)
                     }
                 }
             }

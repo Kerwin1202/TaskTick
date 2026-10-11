@@ -66,7 +66,6 @@
 "editor.tab.basic" = "Dasar";
 "editor.tab.schedule" = "Jadwal";
 "editor.tab.script" = "Perintah";
-"editor.tab.settings" = "Pengaturan";
 "editor.tab.notification" = "Notifikasi";
 "editor.tab.push" = "Push";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "Jalur direktori kerja (opsional)";
 "editor.working_dir.choose" = "Pilih Direktori";
 "editor.timeout" = "Batas Waktu";
+"editor.timeout.enable" = "Aktifkan batas waktu";
 "editor.timeout.seconds" = "detik";
 "editor.timeout.unlimited" = "tanpa batas waktu";
-"editor.timeout.hint" = "Masukkan -1 (atau angka negatif apa pun) untuk tanpa batas waktu — skrip akan berjalan sampai berhenti sendiri atau dihentikan secara manual. Berguna untuk dev server dan proses lain yang berjalan lama.";
+"editor.timeout.hint" = "Dinonaktifkan secara default. Saat diaktifkan, nilai awalnya 300 detik.";
 "editor.ignore_exit_code" = "Abaikan Kode Keluar";
 "editor.ignore_exit_code.hint" = "Jika diaktifkan, tugas dianggap berhasil terlepas dari exit code skrip. Berguna untuk skrip yang mengembalikan kode non-nol pada penyelesaian normal.";
 "editor.pre_run.section" = "Perintah Pra-Jalankan";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "Beri tahu saat disembunyikan di bar menu";
 "settings.general.defaults" = "Bawaan";
 "settings.general.default_shell" = "Shell Bawaan";
-"settings.general.default_timeout" = "Batas Waktu Bawaan";
-"settings.general.seconds" = "detik";
 
 "settings.notifications" = "Notifikasi";
 "settings.notifications.section" = "Pengaturan Notifikasi";

@@ -66,7 +66,6 @@
 "editor.tab.basic" = "Grundlagen";
 "editor.tab.schedule" = "Zeitplan";
 "editor.tab.script" = "Befehl";
-"editor.tab.settings" = "Einstellungen";
 "editor.tab.notification" = "Benachrichtigungen";
 "editor.tab.push" = "Push";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "Optionaler Arbeitsverzeichnispfad";
 "editor.working_dir.choose" = "Verzeichnis auswählen";
 "editor.timeout" = "Zeitlimit";
+"editor.timeout.enable" = "Zeitlimit aktivieren";
 "editor.timeout.seconds" = "Sekunden";
 "editor.timeout.unlimited" = "kein Zeitlimit";
-"editor.timeout.hint" = "Gib -1 (oder eine beliebige negative Zahl) ein, um kein Zeitlimit zu setzen — das Skript läuft, bis es sich selbst beendet oder manuell gestoppt wird. Nützlich für Dev-Server und andere langlaufende Prozesse.";
+"editor.timeout.hint" = "Standardmäßig deaktiviert. Nach dem Aktivieren beträgt das Zeitlimit zunächst 300 Sekunden.";
 "editor.ignore_exit_code" = "Exit-Code ignorieren";
 "editor.ignore_exit_code.hint" = "Wenn aktiviert, wird die Aufgabe unabhängig vom Exit-Code des Skripts als erfolgreich gewertet. Nützlich für Skripte, die bei normalem Abschluss einen Exit-Code ungleich null zurückgeben.";
 "editor.pre_run.section" = "Vor-Ausführungsbefehl";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "Benachrichtigen, wenn in der Menüleiste ausgeblendet";
 "settings.general.defaults" = "Standardwerte";
 "settings.general.default_shell" = "Standard-Shell";
-"settings.general.default_timeout" = "Standard-Zeitlimit";
-"settings.general.seconds" = "Sekunden";
 
 "settings.notifications" = "Benachrichtigungen";
 "settings.notifications.section" = "Benachrichtigungseinstellungen";

@@ -66,7 +66,6 @@
 "editor.tab.basic" = "기본";
 "editor.tab.schedule" = "일정";
 "editor.tab.script" = "명령";
-"editor.tab.settings" = "설정";
 "editor.tab.notification" = "알림";
 "editor.tab.push" = "푸시";
 
@@ -110,9 +109,10 @@
 "editor.working_dir.placeholder" = "작업 디렉토리 경로 (선택 사항)";
 "editor.working_dir.choose" = "디렉토리 선택";
 "editor.timeout" = "시간 제한";
+"editor.timeout.enable" = "시간 제한 사용";
 "editor.timeout.seconds" = "초";
 "editor.timeout.unlimited" = "시간 제한 없음";
-"editor.timeout.hint" = "-1(또는 임의의 음수)을 입력하면 시간 제한이 없습니다. 스크립트가 스스로 종료되거나 수동으로 중지될 때까지 계속 실행됩니다. 개발 서버 등 장시간 실행되는 프로세스에 유용합니다.";
+"editor.timeout.hint" = "기본적으로 꺼져 있습니다. 켜면 기본값은 300초입니다.";
 "editor.ignore_exit_code" = "종료 코드 무시";
 "editor.ignore_exit_code.hint" = "활성화하면 스크립트의 종료 코드와 관계없이 작업이 성공으로 처리됩니다. 정상적으로 완료되더라도 0이 아닌 종료 코드를 반환하는 스크립트에 유용합니다.";
 "editor.pre_run.section" = "사전 실행 명령";
@@ -376,8 +376,6 @@
 "settings.general.notify_on_hide" = "메뉴 막대로 숨길 때 알림";
 "settings.general.defaults" = "기본값";
 "settings.general.default_shell" = "기본 셸";
-"settings.general.default_timeout" = "기본 시간 제한";
-"settings.general.seconds" = "초";
 
 "settings.notifications" = "알림";
 "settings.notifications.section" = "알림 설정";
