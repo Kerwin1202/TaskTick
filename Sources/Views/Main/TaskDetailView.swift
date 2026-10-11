@@ -6,6 +6,7 @@ import TaskTickCore
 struct TaskDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openWindow) private var openWindow
+    @ObservedObject private var mainSelection = MainWindowSelection.shared
     let task: ScheduledTask
     /// The newest ten logs via a bounded store fetch (`ExecutionLogQuery`).
     /// The cards on the right redraw often and must not sort the whole
@@ -74,6 +75,7 @@ struct TaskDetailView: View {
         .onAppear {
             loadFileContent()
             startFileWatcher()
+            openRequestedTaskLogs()
         }
         .onDisappear {
             fileWatcher?.cancel()
@@ -82,6 +84,9 @@ struct TaskDetailView: View {
         .onChange(of: task.scriptFilePath) {
             loadFileContent()
             startFileWatcher()
+        }
+        .onChange(of: mainSelection.taskLogRequest?.requestID) { _, _ in
+            openRequestedTaskLogs()
         }
         .sheet(isPresented: $showingTaskLogs) {
             TaskLogsView(task: task, initialSelectedLogId: selectedLogIdForSheet)
@@ -112,6 +117,14 @@ struct TaskDetailView: View {
         } message: {
             Text(L10n.tr("delete.message", task.name))
         }
+    }
+
+    private func openRequestedTaskLogs() {
+        guard let request = mainSelection.taskLogRequest,
+              request.taskID == task.id else { return }
+        selectedLogIdForSheet = request.logID
+        showingTaskLogs = true
+        mainSelection.taskLogRequest = nil
     }
 
     // MARK: - Header

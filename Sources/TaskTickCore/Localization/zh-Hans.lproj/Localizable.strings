@@ -269,12 +269,17 @@
 "quick_launcher.empty.no_tasks" = "还没有可执行的任务";
 "quick_launcher.empty.no_match" = "没有匹配的任务";
 "quick_launcher.hint.navigate" = "选择";
+"quick_launcher.hint.activate" = "执行";
+"quick_launcher.hint.actions" = "切换操作";
 "quick_launcher.hint.run" = "执行";
 "quick_launcher.hint.close" = "关闭";
 "quick_launcher.recording" = "请按下快捷键…";
 "quick_launcher.menu_item" = "快速访问";
 "quick_launcher.action.run" = "执行";
 "quick_launcher.action.stop" = "停止";
+"quick_launcher.action.logs" = "日志";
+"quick_launcher.action.settings" = "设置";
+"quick_launcher.action.restart" = "重启";
 "quick_launcher.hint.stop" = "停止";
 "quick_launcher.hint.restart" = "重启";
 "quick_launcher.hint.reveal" = "在主窗口打开";

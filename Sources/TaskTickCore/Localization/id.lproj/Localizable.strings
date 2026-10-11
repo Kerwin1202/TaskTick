@@ -269,12 +269,17 @@
 "quick_launcher.empty.no_tasks" = "Tidak ada tugas tersedia";
 "quick_launcher.empty.no_match" = "Tidak ada tugas yang cocok";
 "quick_launcher.hint.navigate" = "Navigasi";
+"quick_launcher.hint.activate" = "Jalankan";
+"quick_launcher.hint.actions" = "Tindakan";
 "quick_launcher.hint.run" = "Jalankan";
 "quick_launcher.hint.close" = "Tutup";
 "quick_launcher.recording" = "Tekan pintasan…";
 "quick_launcher.menu_item" = "Akses Cepat";
 "quick_launcher.action.run" = "Jalankan";
 "quick_launcher.action.stop" = "Hentikan";
+"quick_launcher.action.logs" = "Log";
+"quick_launcher.action.settings" = "Pengaturan";
+"quick_launcher.action.restart" = "Mulai ulang";
 "quick_launcher.hint.stop" = "Hentikan";
 "quick_launcher.hint.restart" = "Mulai Ulang";
 "quick_launcher.hint.reveal" = "Buka di jendela utama";

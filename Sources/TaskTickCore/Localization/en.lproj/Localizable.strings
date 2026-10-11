@@ -269,12 +269,17 @@
 "quick_launcher.empty.no_tasks" = "No tasks available";
 "quick_launcher.empty.no_match" = "No matching tasks";
 "quick_launcher.hint.navigate" = "Navigate";
+"quick_launcher.hint.activate" = "Activate";
+"quick_launcher.hint.actions" = "Actions";
 "quick_launcher.hint.run" = "Run";
 "quick_launcher.hint.close" = "Close";
 "quick_launcher.recording" = "Press shortcut…";
 "quick_launcher.menu_item" = "Quick Launcher";
 "quick_launcher.action.run" = "Run";
 "quick_launcher.action.stop" = "Stop";
+"quick_launcher.action.logs" = "Logs";
+"quick_launcher.action.settings" = "Settings";
+"quick_launcher.action.restart" = "Restart";
 "quick_launcher.hint.stop" = "Stop";
 "quick_launcher.hint.restart" = "Restart";
 "quick_launcher.hint.reveal" = "Open in main";

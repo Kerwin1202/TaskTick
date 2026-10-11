@@ -2,14 +2,22 @@ import SwiftUI
 import SwiftData
 import TaskTickCore
 
-/// Spotlight-style search panel content. Lists matching tasks and runs the
-/// selected one when the user hits Enter.
+private enum QuickLauncherAction: Int, CaseIterable, Hashable {
+    case runStop
+    case logs
+    case settings
+    case restart
+}
+
+/// Spotlight-style search panel content. Tab selects an action for the
+/// highlighted task; Enter performs that action.
 struct QuickLauncherView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ScheduledTask.createdAt, order: .reverse) private var tasks: [ScheduledTask]
     @StateObject private var scheduler = TaskScheduler.shared
     @State private var searchText = ""
     @State private var selectedIndex = 0
+    @State private var selectedActionIndex = 0
     @FocusState private var searchFieldFocused: Bool
     /// Holds the `NSEvent.addLocalMonitorForEvents` reference. We can't rely on
     /// SwiftUI `.onKeyPress` for arrows because the embedded TextField is the
@@ -109,9 +117,8 @@ struct QuickLauncherView: View {
         return visibleTasks[selectedIndex]
     }
 
-    private var isSelectedRunning: Bool {
-        guard let task = selectedTask else { return false }
-        return scheduler.runningTaskIDs.contains(task.id)
+    private var selectedAction: QuickLauncherAction {
+        QuickLauncherAction.allCases[selectedActionIndex]
     }
 
     var body: some View {
@@ -150,6 +157,7 @@ struct QuickLauncherView: View {
             // a default-background frame as it boots. Doing it under alpha=0
             // makes that flash invisible to the user.
             searchFieldFocused = true
+            selectedActionIndex = 0
         }
         .onDisappear { removeKeyMonitor() }
     }
@@ -174,10 +182,18 @@ struct QuickLauncherView: View {
             }
 
             let cmdHeld = event.modifierFlags.contains(.command)
+            let tabModifiersAllowed = !cmdHeld
+                && !event.modifierFlags.contains(.option)
+                && !event.modifierFlags.contains(.control)
+            if Int(event.keyCode) == 48, tabModifiersAllowed, selectedTask != nil {
+                moveAction(event.modifierFlags.contains(.shift) ? -1 : 1)
+                return nil // tab / shift-tab
+            }
+
             switch Int(event.keyCode) {
             case 126: moveSelection(-1); return nil // up
             case 125: moveSelection(1); return nil  // down
-            case 36, 76: runSelected(); return nil   // return / numpad enter
+            case 36, 76: performSelectedAction(); return nil // return / numpad enter
             case 15 where cmdHeld:                   // ⌘R — restart
                 restartSelected(); return nil
             case 31 where cmdHeld:                   // ⌘O — reveal in main window
@@ -216,8 +232,11 @@ struct QuickLauncherView: View {
                 // bug in the launcher itself.
                 .autocorrectionDisabled(true)
                 .textContentType(.none)
-                .onChange(of: searchText) { _, _ in selectedIndex = 0 }
-                .onSubmit { runSelected() }
+                .onChange(of: searchText) { _, _ in
+                    selectedIndex = 0
+                    selectedActionIndex = 0
+                }
+                .onSubmit { performSelectedAction() }
 
             BrandMark(size: 12, tint: .accentColor)
                 .padding(5)
@@ -252,14 +271,16 @@ struct QuickLauncherView: View {
                         QuickLauncherRow(
                             task: task,
                             isSelected: index == selectedIndex,
-                            isRunning: scheduler.runningTaskIDs.contains(task.id)
+                            isRunning: scheduler.runningTaskIDs.contains(task.id),
+                            selectedAction: selectedAction,
+                            onRunStop: {
+                                selectedIndex = index
+                                selectedActionIndex = 0
+                                toggleRun(for: task)
+                            },
+                            onAction: { action in perform(action) }
                         )
                             .id(index)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                selectedIndex = index
-                                runSelected()
-                            }
                     }
                 }
                 .padding(.vertical, 2)
@@ -288,20 +309,11 @@ struct QuickLauncherView: View {
     // MARK: - Footer
 
     private var footerHints: some View {
-        // The Enter hint flips between "执行" and "停止" based on the selected
-        // task's runtime state. ⌘R is always present so users can build muscle
-        // memory regardless of the current row.
         HStack(spacing: 12) {
             kbdHint(keys: ["↑", "↓"], label: L10n.tr("quick_launcher.hint.navigate"))
-            kbdHint(
-                keys: ["↵"],
-                label: isSelectedRunning
-                    ? L10n.tr("quick_launcher.hint.stop")
-                    : L10n.tr("quick_launcher.hint.run")
-            )
-            kbdHint(keys: ["⌘", "R"], label: L10n.tr("quick_launcher.hint.restart"))
+            kbdHint(keys: ["↵"], label: L10n.tr("quick_launcher.hint.activate"))
+            kbdHint(keys: ["⇥"], label: L10n.tr("quick_launcher.hint.actions"))
             kbdHint(keys: ["⌘", "O"], label: L10n.tr("quick_launcher.hint.reveal"))
-            kbdHint(keys: ["⌘", ","], label: L10n.tr("quick_launcher.hint.settings"))
             kbdHint(keys: ["esc"], label: L10n.tr("quick_launcher.hint.close"))
             Spacer()
         }
@@ -338,13 +350,41 @@ struct QuickLauncherView: View {
     private func moveSelection(_ delta: Int) {
         let count = visibleTasks.count
         guard count > 0 else { return }
-        selectedIndex = max(0, min(count - 1, selectedIndex + delta))
+        let nextIndex = max(0, min(count - 1, selectedIndex + delta))
+        if nextIndex != selectedIndex {
+            selectedIndex = nextIndex
+            selectedActionIndex = 0
+        }
+    }
+
+    private func moveAction(_ delta: Int) {
+        guard selectedTask != nil else { return }
+        let count = QuickLauncherAction.allCases.count
+        selectedActionIndex = (selectedActionIndex + delta + count) % count
+    }
+
+    private func performSelectedAction() {
+        perform(selectedAction)
+    }
+
+    private func perform(_ action: QuickLauncherAction) {
+        selectedActionIndex = action.rawValue
+        switch action {
+        case .runStop: runSelected()
+        case .logs: openSelectedLogs()
+        case .settings: openSettings()
+        case .restart: restartSelected()
+        }
     }
 
     /// Primary action — context sensitive. Idle tasks start; running tasks
     /// stop. Mirrors the contract telegraphed by the row's pill text.
     private func runSelected() {
         guard let task = selectedTask else { return }
+        toggleRun(for: task)
+    }
+
+    private func toggleRun(for task: ScheduledTask) {
         let name = task.name
         if scheduler.runningTaskIDs.contains(task.id) {
             ScriptExecutor.shared.cancel(taskId: task.id)
@@ -399,6 +439,20 @@ struct QuickLauncherView: View {
         onDismiss()
     }
 
+    /// Open the selected task's log sheet on its newest execution. The task
+    /// detail view owns the sheet, so rendezvous through the shared selection
+    /// state before revealing that task in the main window.
+    private func openSelectedLogs() {
+        guard let task = selectedTask else { return }
+        let descriptor = ExecutionLogQuery.recent(taskID: task.id, limit: 1)
+        let latestLog = (try? modelContext.fetch(descriptor))?.first
+        MainWindowSelection.shared.taskLogRequest = TaskLogRequest(
+            taskID: task.id,
+            logID: latestLog?.id
+        )
+        revealSelected()
+    }
+
     /// ⌘, — close the launcher and open the Settings scene.
     private func openSettings() {
         SettingsWindowOpener.open()
@@ -412,6 +466,9 @@ private struct QuickLauncherRow: View {
     let task: ScheduledTask
     let isSelected: Bool
     let isRunning: Bool
+    let selectedAction: QuickLauncherAction
+    let onRunStop: () -> Void
+    let onAction: (QuickLauncherAction) -> Void
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
@@ -424,40 +481,43 @@ private struct QuickLauncherRow: View {
             // Icon chip — running tasks override the static icon with a green
             // spinner, so the user can spot live tasks at a glance even
             // without reading the subtitle.
-            ZStack {
-                RoundedRectangle(cornerRadius: 5)
-                    .fill(iconTint.opacity(0.22))
-                if isRunning {
-                    ProgressView()
-                        .controlSize(.mini)
-                        .tint(.green)
-                } else {
-                    Image(systemName: task.isManualOnly ? "hand.tap.fill" : "clock.fill")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(iconTint)
+            HStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(iconTint.opacity(0.22))
+                    if isRunning {
+                        ProgressView()
+                            .controlSize(.mini)
+                            .tint(.green)
+                    } else {
+                        Image(systemName: task.isManualOnly ? "hand.tap.fill" : "clock.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(iconTint)
+                    }
+                }
+                .frame(width: 22, height: 22)
+
+                // Single-line "title — subtitle" layout, like Raycast's command
+                // rows. Text colors stay primary/secondary regardless of
+                // selection — the selection cue is the soft background tint.
+                HStack(spacing: 5) {
+                    Text(task.name)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Text("·")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+
+                    Text(subtitle)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
-            .frame(width: 22, height: 22)
-
-            // Single-line "title — subtitle" layout, like Raycast's command
-            // rows. Text colors stay primary/secondary regardless of
-            // selection — the selection cue is the soft background tint, not
-            // an inverted color scheme.
-            HStack(spacing: 5) {
-                Text(task.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-
-                Text("·")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.tertiary)
-
-                Text(subtitle)
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onRunStop)
 
             Spacer(minLength: 6)
 
@@ -498,20 +558,11 @@ private struct QuickLauncherRow: View {
             }
 
             if isSelected {
-                let stopColor = Color(red: 0.78, green: 0.32, blue: 0.30)
-                Text(isRunning
-                     ? L10n.tr("quick_launcher.action.stop")
-                     : L10n.tr("quick_launcher.action.run"))
-                    .font(.system(size: 10.5, weight: .semibold))
-                    // Tone down the stop red — system `.red` blasts out in
-                    // light mode against the soft panel surface. A muted
-                    // brick reads as "warning" without the eye strain.
-                    .foregroundStyle(isRunning ? stopColor : Color.accentColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(
-                        Capsule().fill(Color.primary.opacity(0.08))
-                    )
+                HStack(spacing: 4) {
+                    ForEach(QuickLauncherAction.allCases, id: \.self) { action in
+                        actionButton(action)
+                    }
+                }
             }
         }
         .padding(.horizontal, 10)
@@ -533,5 +584,45 @@ private struct QuickLauncherRow: View {
     private var subtitle: String {
         if isRunning { return L10n.tr("quick_launcher.subtitle.running") }
         return task.isManualOnly ? L10n.tr("schedule.manual_only") : task.repeatDisplayName
+    }
+
+    private func actionButton(_ action: QuickLauncherAction) -> some View {
+        let isFocused = action == selectedAction
+        let focusColor = action == .runStop && isRunning
+            ? Color(red: 0.78, green: 0.32, blue: 0.30)
+            : Color.accentColor
+        return Button {
+            onAction(action)
+        } label: {
+            Text(actionTitle(action))
+                .font(.system(size: 10.5, weight: .semibold))
+                .foregroundStyle(isFocused ? focusColor : Color.secondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(
+                    Capsule().fill(Color.primary.opacity(isFocused ? 0.12 : 0.07))
+                )
+                .overlay {
+                    Capsule().strokeBorder(
+                        isFocused ? focusColor.opacity(0.55) : .clear,
+                        lineWidth: 1
+                    )
+                }
+        }
+        .buttonStyle(.plain)
+        .pointerCursor()
+    }
+
+    private func actionTitle(_ action: QuickLauncherAction) -> String {
+        switch action {
+        case .runStop:
+            L10n.tr(isRunning ? "quick_launcher.action.stop" : "quick_launcher.action.run")
+        case .logs:
+            L10n.tr("quick_launcher.action.logs")
+        case .settings:
+            L10n.tr("quick_launcher.action.settings")
+        case .restart:
+            L10n.tr("quick_launcher.action.restart")
+        }
     }
 }

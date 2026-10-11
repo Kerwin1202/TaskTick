@@ -269,12 +269,17 @@
 "quick_launcher.empty.no_tasks" = "Нет доступных задач";
 "quick_launcher.empty.no_match" = "Ничего не найдено";
 "quick_launcher.hint.navigate" = "Навигация";
+"quick_launcher.hint.activate" = "Выполнить";
+"quick_launcher.hint.actions" = "Действия";
 "quick_launcher.hint.run" = "Запустить";
 "quick_launcher.hint.close" = "Закрыть";
 "quick_launcher.recording" = "Нажмите сочетание клавиш…";
 "quick_launcher.menu_item" = "Быстрый запуск";
 "quick_launcher.action.run" = "Запустить";
 "quick_launcher.action.stop" = "Остановить";
+"quick_launcher.action.logs" = "Журналы";
+"quick_launcher.action.settings" = "Настройки";
+"quick_launcher.action.restart" = "Перезапустить";
 "quick_launcher.hint.stop" = "Остановить";
 "quick_launcher.hint.restart" = "Перезапустить";
 "quick_launcher.hint.reveal" = "Открыть в главном окне";

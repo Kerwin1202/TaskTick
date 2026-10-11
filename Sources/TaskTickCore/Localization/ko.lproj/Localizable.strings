@@ -269,12 +269,17 @@
 "quick_launcher.empty.no_tasks" = "사용 가능한 작업이 없습니다";
 "quick_launcher.empty.no_match" = "일치하는 작업이 없습니다";
 "quick_launcher.hint.navigate" = "이동";
+"quick_launcher.hint.activate" = "실행";
+"quick_launcher.hint.actions" = "작업";
 "quick_launcher.hint.run" = "실행";
 "quick_launcher.hint.close" = "닫기";
 "quick_launcher.recording" = "단축키를 눌러주세요…";
 "quick_launcher.menu_item" = "빠른 실행";
 "quick_launcher.action.run" = "실행";
 "quick_launcher.action.stop" = "중지";
+"quick_launcher.action.logs" = "로그";
+"quick_launcher.action.settings" = "설정";
+"quick_launcher.action.restart" = "다시 시작";
 "quick_launcher.hint.stop" = "중지";
 "quick_launcher.hint.restart" = "재시작";
 "quick_launcher.hint.reveal" = "메인에서 열기";

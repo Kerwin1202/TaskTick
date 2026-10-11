@@ -1,6 +1,18 @@
 import Foundation
 import TaskTickCore
 
+struct TaskLogRequest: Equatable {
+    let requestID: UUID
+    let taskID: UUID
+    let logID: UUID?
+
+    init(taskID: UUID, logID: UUID?) {
+        self.requestID = UUID()
+        self.taskID = taskID
+        self.logID = logID
+    }
+}
+
 /// One-shot rendezvous so external triggers (Quick Launcher, Menu Bar, future
 /// URL handlers) can ask the main window to focus a specific task. The main
 /// window reads this on appear and on change, then clears it so a later
@@ -11,6 +23,7 @@ final class MainWindowSelection: ObservableObject {
     private init() {}
 
     @Published var taskToReveal: ScheduledTask?
+    @Published var taskLogRequest: TaskLogRequest?
 }
 
 extension Notification.Name {
