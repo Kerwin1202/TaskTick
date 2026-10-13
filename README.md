@@ -95,6 +95,16 @@ swift build -c release
 swift run
 ```
 
+For local release DMGs, run `bash ./scripts/package-local.sh`. A native dialog
+asks for the version and remembers the last entry. To supply it directly, use
+`bash ./scripts/package-local.sh 1.26.0` or
+`bash ./scripts/release.sh 1.26.0 --local-only`. Both architectures are built
+under `.release/`, without publishing to GitHub or Gitee.
+
+In TaskTick, add a manual-only task with this repository as its working
+directory and `bash ./scripts/package-local.sh` as its command. Leave the
+timeout disabled so a long build can finish.
+
 ## Sponsor
 
 If TaskTick is useful to you, consider [sponsoring](https://www.lifedever.com/sponsor/) the developer to support ongoing maintenance.

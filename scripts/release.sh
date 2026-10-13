@@ -4,7 +4,7 @@ set -euo pipefail
 # ─────────────────────────────────────────────
 # TaskTick Release Script
 # Builds arm64 + x86_64 DMGs and uploads to GitHub Release
-# Usage: ./scripts/release.sh [version]
+# Usage: ./scripts/release.sh <version> [--local-only] [--yes]
 #   e.g. ./scripts/release.sh 1.2.0
 # ─────────────────────────────────────────────
 
@@ -16,13 +16,23 @@ MIN_MACOS="14.0"
 
 # ── Parse args ──
 ASSUME_YES=false
+LOCAL_ONLY=false
 VERSION=""
+
+usage() {
+  echo "Usage: $0 <version> [--local-only] [--yes]"
+  echo "  --local-only  build DMGs without any upload prompt or publication"
+  echo "  --yes         publish without prompting (required when stdin is not a TTY)"
+}
+
 for arg in "$@"; do
   case "$arg" in
     -y|--yes) ASSUME_YES=true ;;
+    --local-only) LOCAL_ONLY=true ;;
+    -h|--help) usage; exit 0 ;;
     -*)
       echo "Unknown option: $arg"
-      echo "Usage: $0 <version> [--yes]"
+      usage
       exit 1
       ;;
     *)
@@ -36,9 +46,7 @@ for arg in "$@"; do
 done
 
 if [ -z "$VERSION" ]; then
-  echo "Usage: $0 <version> [--yes]"
-  echo "  e.g. $0 1.2.0"
-  echo "  --yes  skip the upload prompt (required when stdin is not a TTY)"
+  usage
   exit 1
 fi
 TAG="v${VERSION}"
@@ -260,6 +268,11 @@ echo ""
 echo "  ${BUILD_DIR}/${APP_NAME}-${VERSION}-arm64.dmg"
 echo "  ${BUILD_DIR}/${APP_NAME}-${VERSION}-x86_64.dmg"
 echo ""
+
+if [ "$LOCAL_ONLY" = true ]; then
+  echo "Local build complete."
+  exit 0
+fi
 
 # ── Upload to GitHub Release ──
 #

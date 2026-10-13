@@ -11,5 +11,6 @@ docs/script-editor-roadmap.md
 .dev-build/
 .release/
 .release-test/
+.local/
 .worktrees/
 status-cache.json
