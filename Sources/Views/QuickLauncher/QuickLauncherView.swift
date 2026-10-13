@@ -98,23 +98,13 @@ struct QuickLauncherView: View {
             .map(\.task)
     }
 
-    /// Hard-cap the result list at 8 — Spotlight-feel. More rows would push
-    /// the panel into the territory of a window, not a launcher. If a user
-    /// has so many tasks that the top 8 isn't enough, they can refine the
-    /// query.
-    private static let maxVisibleResults = 8
-
     /// Visible card width — kept as a typed constant so the controller can
     /// size the host window to match without inferring from intrinsic layout.
     static let cardWidth: CGFloat = 580
 
-    private var visibleTasks: [ScheduledTask] {
-        Array(rankedTasks.prefix(Self.maxVisibleResults))
-    }
-
     private var selectedTask: ScheduledTask? {
-        guard selectedIndex < visibleTasks.count else { return nil }
-        return visibleTasks[selectedIndex]
+        guard selectedIndex < rankedTasks.count else { return nil }
+        return rankedTasks[selectedIndex]
     }
 
     private var selectedAction: QuickLauncherAction {
@@ -125,7 +115,7 @@ struct QuickLauncherView: View {
         VStack(spacing: 6) {
             searchBar
 
-            if !visibleTasks.isEmpty {
+            if !rankedTasks.isEmpty {
                 resultsList
             } else if !searchText.isEmpty {
                 emptyHint(L10n.tr("quick_launcher.empty.no_match"))
@@ -264,7 +254,7 @@ struct QuickLauncherView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 3) {
-                    ForEach(Array(visibleTasks.enumerated()), id: \.element.id) { index, task in
+                    ForEach(Array(rankedTasks.enumerated()), id: \.element.id) { index, task in
                         QuickLauncherRow(
                             task: task,
                             isSelected: index == selectedIndex,
@@ -346,7 +336,7 @@ struct QuickLauncherView: View {
     // MARK: - Actions
 
     private func moveSelection(_ delta: Int) {
-        let count = visibleTasks.count
+        let count = rankedTasks.count
         guard count > 0 else { return }
         let nextIndex = max(0, min(count - 1, selectedIndex + delta))
         if nextIndex != selectedIndex {
