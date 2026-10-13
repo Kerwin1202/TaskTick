@@ -23,6 +23,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// then quits without showing the confirmation dialog again.
     @MainActor static var shouldReallyQuit = false
 
+    static let hideOnQuitSettingKey = "hideOnQuit"
+    @MainActor private static var menuBarQuitRequested = false
+
+    enum TerminationBehavior: Equatable {
+        case exit, hide, confirm
+    }
+
+    static func terminationBehavior(
+        defaults: UserDefaults = .standard,
+        fromMenuBar: Bool = false,
+        sessionEnding: Bool = false,
+        internalRestart: Bool = false
+    ) -> TerminationBehavior {
+        if sessionEnding || internalRestart { return .exit }
+        if defaults.bool(forKey: hideOnQuitSettingKey) && !fromMenuBar { return .hide }
+        return .confirm
+    }
+
+    @MainActor
+    static func requestQuitFromMenuBar() {
+        menuBarQuitRequested = true
+        defer { menuBarQuitRequested = false }
+        NSApp.terminate(nil)
+    }
+
     private var revealObserver: NSObjectProtocol?
     private var signalSources: [DispatchSourceSignal] = []
 
@@ -270,31 +295,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        // Session teardown must never be blocked or interrupted by a modal —
-        // running scripts are stopped by applicationWillTerminate's
-        // gracefulShutdown either way.
-        if Self.isSessionEndTermination() {
+        let fromMenuBar = Self.menuBarQuitRequested
+        Self.menuBarQuitRequested = false
+        switch Self.terminationBehavior(
+            fromMenuBar: fromMenuBar,
+            sessionEnding: Self.isSessionEndTermination(),
+            internalRestart: Self.shouldReallyQuit
+        ) {
+        case .exit:
+            // Session teardown and confirmed internal restarts must proceed.
             return .terminateNow
+        case .hide:
+            // The menu bar must remain accessible as the explicit exit path.
+            UserDefaults.standard.set(true, forKey: "showMenuBarIcon")
+            hideToMenuBar(sender)
+            return .terminateCancel
+        case .confirm:
+            break
         }
-        // Internal restart flows confirmed running scripts before arming the
-        // flag; don't ask twice.
-        if AppDelegate.shouldReallyQuit {
-            return .terminateNow
-        }
-        // User quit (Cmd+Q, app-menu Quit, menu-bar Quit): confirm, with
-        // "hide in menu bar" as the non-destructive escape hatch.
+
         switch presentQuitConfirmation() {
         case .quit:
             return .terminateNow
         case .hide:
-            // The user just picked "Hide in Menu Bar" — telling them it's hidden
-            // would be noise. Closing the windows below reaches
-            // applicationShouldTerminateAfterLastWindowClosed, so suppress first.
-            MenuBarHideNotice.suppressBriefly()
-            for window in sender.windows where window.isVisible && window.canBecomeMain {
-                window.close()
-            }
-            NSApp.setActivationPolicy(.accessory)
+            hideToMenuBar(sender)
             return .terminateCancel
         case .cancel:
             return .terminateCancel
@@ -303,6 +327,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private enum QuitChoice {
         case quit, hide, cancel
+    }
+
+    @MainActor
+    private func hideToMenuBar(_ sender: NSApplication) {
+        MenuBarHideNotice.suppressBriefly()
+        for window in sender.windows where window.isVisible && window.canBecomeMain {
+            window.close()
+        }
+        sender.setActivationPolicy(.accessory)
     }
 
     @MainActor
@@ -380,11 +413,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         // Switch to accessory mode (menu bar only) when all windows are closed
         let wasVisibleApp = NSApp.activationPolicy() == .regular
+        let hideOnQuit = UserDefaults.standard.bool(forKey: Self.hideOnQuitSettingKey)
+        if hideOnQuit {
+            UserDefaults.standard.set(true, forKey: "showMenuBarIcon")
+        }
         NSApp.setActivationPolicy(.accessory)
         // Only announce the transition itself. Already an accessory app means this
         // was a stray panel closing, not the app leaving the Dock; an armed
         // shouldReallyQuit means we're on our way out for an update restart.
-        if wasVisibleApp && !AppDelegate.shouldReallyQuit {
+        if wasVisibleApp && !AppDelegate.shouldReallyQuit && !hideOnQuit {
             MenuBarHideNotice.fire()
         }
         return false

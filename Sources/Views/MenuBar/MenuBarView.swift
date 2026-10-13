@@ -13,31 +13,34 @@ struct MenuBarView: View {
     /// instant the user re-records it in Settings — no stale label.
     @ObservedObject private var quickLauncherSettings = QuickLauncherSettings.shared
 
-    /// Caps tuned for the menu bar surface. Scheduled jobs fire on their
-    /// own schedule so the next 3 are usually enough context; manual scripts
-    /// are the day-to-day actions, so they get more room. Combined cap is
-    /// already implicit (3 + 5 = 8), keeping the popover height bounded.
-    private static let maxScheduled = 3
-    private static let maxManual = 5
+    var scheduledTasks: [ScheduledTask] {
+        Self.scheduledTasks(from: tasks)
+    }
 
-    var upcomingTasks: [ScheduledTask] {
+    static func scheduledTasks(from tasks: [ScheduledTask]) -> [ScheduledTask] {
         tasks
-            .filter { $0.isEnabled && !$0.isManualOnly && $0.nextRunAt != nil }
-            .sorted { ($0.nextRunAt ?? .distantFuture) < ($1.nextRunAt ?? .distantFuture) }
-            .prefix(Self.maxScheduled)
-            .map { $0 }
+            .filter { $0.isEnabled && !$0.isManualOnly }
+            .sorted {
+                let lhsNext = $0.nextRunAt ?? .distantFuture
+                let rhsNext = $1.nextRunAt ?? .distantFuture
+                if lhsNext != rhsNext { return lhsNext < rhsNext }
+                if $0.createdAt != $1.createdAt { return $0.createdAt > $1.createdAt }
+                return $0.id.uuidString < $1.id.uuidString
+            }
     }
 
     var manualTasks: [ScheduledTask] {
+        Self.manualTasks(from: tasks)
+    }
+
+    static func manualTasks(from tasks: [ScheduledTask]) -> [ScheduledTask] {
         tasks
             .filter { $0.isEnabled && $0.isManualOnly }
             .sorted {
-                // Most-recently-manually-run first; tasks that have never run
-                // manually fall back to their creation time.
-                ($0.lastManualRunAt ?? $0.createdAt) > ($1.lastManualRunAt ?? $1.createdAt)
+                // Running a script must not move it under the user's pointer.
+                if $0.createdAt != $1.createdAt { return $0.createdAt > $1.createdAt }
+                return $0.id.uuidString < $1.id.uuidString
             }
-            .prefix(Self.maxManual)
-            .map { $0 }
     }
 
     @State private var isHoveringHeader = false
@@ -56,6 +59,7 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
+                        .help("\(L10n.tr("task.filter.enabled")) / \(L10n.tr("task.filter.all"))")
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
@@ -74,7 +78,7 @@ struct MenuBarView: View {
             Divider()
 
             // Task list
-            if upcomingTasks.isEmpty && manualTasks.isEmpty {
+            if scheduledTasks.isEmpty && manualTasks.isEmpty {
                 VStack(spacing: 8) {
                     Image(systemName: "tray")
                         .font(.largeTitle)
@@ -86,38 +90,42 @@ struct MenuBarView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
             } else {
-                VStack(spacing: 2) {
-                    if !upcomingTasks.isEmpty {
-                        HStack {
-                            Text(L10n.tr("menubar.upcoming"))
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                            Spacer()
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.top, 4)
+                ScrollView {
+                    VStack(spacing: 2) {
+                        if !scheduledTasks.isEmpty {
+                            HStack {
+                                Text(L10n.tr("tasklist.section.scheduled"))
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.top, 4)
 
-                        ForEach(upcomingTasks) { task in
-                            MenuBarTaskRow(task: task, isRunning: scheduler.runningTaskIDs.contains(task.id))
+                            ForEach(scheduledTasks) { task in
+                                MenuBarTaskRow(task: task, isRunning: scheduler.runningTaskIDs.contains(task.id))
+                            }
+                        }
+
+                        if !manualTasks.isEmpty {
+                            HStack {
+                                Text(L10n.tr("menubar.manual_scripts"))
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.top, scheduledTasks.isEmpty ? 4 : 8)
+
+                            ForEach(manualTasks) { task in
+                                MenuBarTaskRow(task: task, isRunning: scheduler.runningTaskIDs.contains(task.id))
+                            }
                         }
                     }
-
-                    if !manualTasks.isEmpty {
-                        HStack {
-                            Text(L10n.tr("menubar.manual_scripts"))
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                            Spacer()
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.top, upcomingTasks.isEmpty ? 4 : 8)
-
-                        ForEach(manualTasks) { task in
-                            MenuBarTaskRow(task: task, isRunning: scheduler.runningTaskIDs.contains(task.id))
-                        }
-                    }
+                    .padding(8)
                 }
-                .padding(8)
+                .frame(maxHeight: 360)
+                .fixedSize(horizontal: false, vertical: true)
             }
 
             Divider()
@@ -180,9 +188,7 @@ struct MenuBarView: View {
                 }
 
                 MenuBarFooterButton(title: L10n.tr("menubar.quit")) {
-                    // Goes through applicationShouldTerminate, which shows the
-                    // unified Quit / Hide / Cancel confirmation.
-                    NSApp.terminate(nil)
+                    AppDelegate.requestQuitFromMenuBar()
                 }
             }
             .padding(8)
@@ -299,15 +305,15 @@ struct MenuBarTaskRow: View {
                 }
                 .buttonStyle(.plain)
                 .pointerCursor()
-            } else if task.isManualOnly {
-                Image(systemName: "play.circle")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            } else if let nextRun = task.nextRunAt {
+            } else if let nextRun = task.nextRunAt, !task.isManualOnly {
                 Text(nextRun, style: .relative)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
+            } else {
+                Image(systemName: "play.circle")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
             }
         }
         .padding(.horizontal, 10)

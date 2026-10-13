@@ -427,18 +427,12 @@ struct QuickLauncherView: View {
         onDismiss()
     }
 
-    /// Open the selected task's log sheet on its newest execution. The task
-    /// detail view owns the sheet, so rendezvous through the shared selection
-    /// state before revealing that task in the main window.
+    /// Open the dedicated Logs window on this task's newest execution.
     private func openSelectedLogs() {
         guard let task = selectedTask else { return }
-        let descriptor = ExecutionLogQuery.recent(taskID: task.id, limit: 1)
-        let latestLog = (try? modelContext.fetch(descriptor))?.first
-        MainWindowSelection.shared.taskLogRequest = TaskLogRequest(
-            taskID: task.id,
-            logID: latestLog?.id
-        )
-        revealSelected()
+        LogWindowSelection.shared.taskToReveal = task.id
+        onDismiss()
+        WindowOpener.shared.openLogs?()
     }
 
     /// ⌘, — close the launcher and open the Settings scene.

@@ -378,6 +378,8 @@
 "settings.general.startup" = "Startup";
 "settings.general.launch_at_login" = "Launch at Login";
 "settings.general.show_menubar_icon" = "Show menu bar icon";
+"settings.general.hide_on_quit" = "Hide in menu bar when quitting";
+"settings.general.hide_on_quit.hint" = "When enabled, ⌘Q and ordinary Quit commands hide TaskTick without a prompt. Use Quit in the menu bar menu to exit.";
 "settings.general.notify_on_hide" = "Notify when hidden in the menu bar";
 "settings.general.defaults" = "Defaults";
 "settings.general.default_shell" = "Default Shell";

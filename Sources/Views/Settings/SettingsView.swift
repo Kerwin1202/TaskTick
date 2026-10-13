@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage("defaultShell") private var defaultShell = "/bin/zsh"
     @AppStorage("appearanceMode") private var appearanceMode = "system"
     @AppStorage("showMenuBarIcon") private var showMenuBarIcon = true
+    @AppStorage(AppDelegate.hideOnQuitSettingKey) private var hideOnQuit = false
 
     // Notifications
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
@@ -175,8 +176,19 @@ struct SettingsView: View {
                     }
 
                 Toggle(L10n.tr("settings.general.show_menubar_icon"), isOn: $showMenuBarIcon)
+                    .disabled(hideOnQuit)
+
+                Toggle(L10n.tr("settings.general.hide_on_quit"), isOn: $hideOnQuit)
+                    .onChange(of: hideOnQuit) { _, enabled in
+                        if enabled { showMenuBarIcon = true }
+                    }
+
+                Text(L10n.tr("settings.general.hide_on_quit.hint"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 Toggle(L10n.tr("settings.general.notify_on_hide"), isOn: $notifyOnHideToMenuBar)
+                    .disabled(hideOnQuit)
             }
 
             Section(L10n.tr("settings.general.defaults")) {

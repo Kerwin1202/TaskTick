@@ -347,6 +347,8 @@
 "settings.general.startup" = "Démarrage";
 "settings.general.launch_at_login" = "Lancer au démarrage";
 "settings.general.show_menubar_icon" = "Afficher l'icône dans la barre des menus";
+"settings.general.hide_on_quit" = "Masquer dans la barre des menus en quittant";
+"settings.general.hide_on_quit.hint" = "Si activé, ⌘Q et les commandes habituelles pour quitter masquent TaskTick sans confirmation. Pour quitter l’app, utilisez Quitter dans le menu de la barre des menus.";
 "settings.general.notify_on_hide" = "Notifier lors du masquage dans la barre des menus";
 "settings.general.defaults" = "Paramètres par défaut";
 "settings.general.default_shell" = "Shell par défaut";

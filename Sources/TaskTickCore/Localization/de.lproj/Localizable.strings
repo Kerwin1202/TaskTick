@@ -378,6 +378,8 @@
 "settings.general.startup" = "Autostart";
 "settings.general.launch_at_login" = "Beim Anmelden starten";
 "settings.general.show_menubar_icon" = "Menüleistensymbol anzeigen";
+"settings.general.hide_on_quit" = "Beim Beenden in die Menüleiste ausblenden";
+"settings.general.hide_on_quit.hint" = "Wenn aktiviert, blenden ⌘Q und normale Befehle zum Beenden TaskTick ohne Rückfrage aus. Zum Beenden der App den Eintrag in der Menüleiste verwenden.";
 "settings.general.notify_on_hide" = "Benachrichtigen, wenn in der Menüleiste ausgeblendet";
 "settings.general.defaults" = "Standardwerte";
 "settings.general.default_shell" = "Standard-Shell";

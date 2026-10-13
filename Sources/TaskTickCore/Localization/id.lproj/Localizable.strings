@@ -378,6 +378,8 @@
 "settings.general.startup" = "Mulai Otomatis";
 "settings.general.launch_at_login" = "Jalankan saat Login";
 "settings.general.show_menubar_icon" = "Tampilkan ikon bilah menu";
+"settings.general.hide_on_quit" = "Sembunyikan ke bilah menu saat keluar";
+"settings.general.hide_on_quit.hint" = "Jika diaktifkan, ⌘Q dan perintah keluar biasa menyembunyikan TaskTick tanpa konfirmasi. Untuk menutup aplikasi, pilih Keluar di menu bilah menu.";
 "settings.general.notify_on_hide" = "Beri tahu saat disembunyikan di bar menu";
 "settings.general.defaults" = "Bawaan";
 "settings.general.default_shell" = "Shell Bawaan";

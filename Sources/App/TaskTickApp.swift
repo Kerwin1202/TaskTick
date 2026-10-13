@@ -90,6 +90,8 @@ struct TaskTickApp: App {
     }()
 
     var body: some Scene {
+        let _ = configureLogWindowOpener()
+
         // Main window
         Window(L10n.tr("app.name"), id: "main") {
             MainWindowView(showingCrontabImport: $showingCrontabImport)
@@ -201,6 +203,15 @@ struct TaskTickApp: App {
         .defaultSize(width: 860, height: 540)
     }
 
+
+    private func configureLogWindowOpener() {
+        let action = openWindow
+        WindowOpener.shared.openLogs = {
+            NSApp.setActivationPolicy(.regular)
+            action(id: "logs")
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
 
     private static let menuBarPointSize: CGFloat = 15
 

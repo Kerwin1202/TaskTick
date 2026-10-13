@@ -29,6 +29,53 @@ final class QuitFlowTests: XCTestCase {
         XCTAssertFalse(AppDelegate.isSessionEndQuitReason(OSType(kAEQuitApplication)))
     }
 
+    // MARK: - Auto-hide policy
+
+    func testAutoHideDefaultsToOff() {
+        withQuitDefaults { defaults in
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults), .confirm)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults, fromMenuBar: true), .confirm)
+        }
+    }
+
+    func testOrdinaryQuitHidesWhenEnabled() {
+        withQuitDefaults { defaults in
+            defaults.set(true, forKey: AppDelegate.hideOnQuitSettingKey)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults), .hide)
+        }
+    }
+
+    func testMenuBarQuitStillConfirmsAndNextOrdinaryQuitHides() {
+        withQuitDefaults { defaults in
+            defaults.set(true, forKey: AppDelegate.hideOnQuitSettingKey)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults, fromMenuBar: true), .confirm)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults), .hide)
+        }
+    }
+
+    func testSessionEndBypassesAutoHide() {
+        withQuitDefaults { defaults in
+            defaults.set(true, forKey: AppDelegate.hideOnQuitSettingKey)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults, sessionEnding: true), .exit)
+        }
+    }
+
+    func testInternalRestartBypassesAutoHide() {
+        withQuitDefaults { defaults in
+            defaults.set(true, forKey: AppDelegate.hideOnQuitSettingKey)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults, internalRestart: true), .exit)
+        }
+    }
+
+    func testTurningAutoHideOffRestoresConfirmation() {
+        withQuitDefaults { defaults in
+            defaults.set(true, forKey: AppDelegate.hideOnQuitSettingKey)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults), .hide)
+            defaults.set(false, forKey: AppDelegate.hideOnQuitSettingKey)
+            XCTAssertEqual(AppDelegate.terminationBehavior(defaults: defaults), .confirm)
+        }
+    }
+
     // MARK: - Installer script abort guard
 
     /// If the app is still alive when the wait window expires (quit cancelled
@@ -76,6 +123,13 @@ final class QuitFlowTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    private func withQuitDefaults(_ body: (UserDefaults) -> Void) {
+        let suite = "tasktick-quit-policy-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        body(defaults)
+    }
 
     private struct InstallEnvironment {
         let dir: URL

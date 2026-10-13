@@ -378,6 +378,8 @@
 "settings.general.startup" = "起動";
 "settings.general.launch_at_login" = "ログイン時に起動";
 "settings.general.show_menubar_icon" = "メニューバーアイコンを表示";
+"settings.general.hide_on_quit" = "終了時にメニューバーへ自動的に隠す";
+"settings.general.hide_on_quit.hint" = "有効にすると、⌘Qや通常の終了操作では確認なしでTaskTickを非表示にします。アプリを終了するにはメニューバーのメニューから終了を選んでください。";
 "settings.general.notify_on_hide" = "メニューバーに隠したときに通知";
 "settings.general.defaults" = "デフォルト";
 "settings.general.default_shell" = "デフォルトシェル";

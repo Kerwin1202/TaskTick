@@ -378,6 +378,8 @@
 "settings.general.startup" = "Avvio";
 "settings.general.launch_at_login" = "Avvia al login";
 "settings.general.show_menubar_icon" = "Mostra icona nella barra dei menu";
+"settings.general.hide_on_quit" = "Nascondi nella barra dei menu all’uscita";
+"settings.general.hide_on_quit.hint" = "Quando attivo, ⌘Q e i normali comandi di uscita nascondono TaskTick senza conferma. Per chiudere l’app, usa Esci nel menu della barra dei menu.";
 "settings.general.notify_on_hide" = "Avvisa quando è nascosto nella barra dei menu";
 "settings.general.defaults" = "Predefiniti";
 "settings.general.default_shell" = "Shell predefinita";

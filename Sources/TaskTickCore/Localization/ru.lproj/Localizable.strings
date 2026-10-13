@@ -378,6 +378,8 @@
 "settings.general.startup" = "Запуск";
 "settings.general.launch_at_login" = "Запускать при входе в систему";
 "settings.general.show_menubar_icon" = "Показывать значок в строке меню";
+"settings.general.hide_on_quit" = "Скрывать в строку меню при выходе";
+"settings.general.hide_on_quit.hint" = "Если включено, ⌘Q и обычные команды выхода скрывают TaskTick без подтверждения. Чтобы закрыть приложение, выберите выход в меню строки меню.";
 "settings.general.notify_on_hide" = "Уведомлять при сворачивании в строку меню";
 "settings.general.defaults" = "Значения по умолчанию";
 "settings.general.default_shell" = "Shell по умолчанию";

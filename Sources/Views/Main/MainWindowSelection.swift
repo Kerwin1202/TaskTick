@@ -1,18 +1,6 @@
 import Foundation
 import TaskTickCore
 
-struct TaskLogRequest: Equatable {
-    let requestID: UUID
-    let taskID: UUID
-    let logID: UUID?
-
-    init(taskID: UUID, logID: UUID?) {
-        self.requestID = UUID()
-        self.taskID = taskID
-        self.logID = logID
-    }
-}
-
 /// One-shot rendezvous so external triggers (Quick Launcher, Menu Bar, future
 /// URL handlers) can ask the main window to focus a specific task. The main
 /// window reads this on appear and on change, then clears it so a later
@@ -23,7 +11,6 @@ final class MainWindowSelection: ObservableObject {
     private init() {}
 
     @Published var taskToReveal: ScheduledTask?
-    @Published var taskLogRequest: TaskLogRequest?
 }
 
 extension Notification.Name {
@@ -35,13 +22,14 @@ extension Notification.Name {
 }
 
 /// Bridges `EnvironmentValues.openWindow` (a SwiftUI scene-only API) into
-/// non-View contexts like AppDelegate. Stashed by the main window's view on
-/// appear, called from the notification observer when the user wants the
-/// main window surfaced from elsewhere.
+/// non-View contexts like AppDelegate and the Quick Launcher. The main view
+/// registers its action on appear; the app registers the Logs action when
+/// building its scenes so it also works before the main window is shown.
 @MainActor
 final class WindowOpener {
     static let shared = WindowOpener()
     private init() {}
 
     var openMain: (() -> Void)?
+    var openLogs: (() -> Void)?
 }

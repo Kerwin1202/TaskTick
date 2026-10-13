@@ -9,7 +9,16 @@ struct LogFilter: Equatable {
     var status: ExecutionStatus?
 }
 
-/// Global Logs window. Thin shell that owns the filter and page size; the
+/// Keeps a launcher request until the Logs window can consume it.
+@MainActor
+final class LogWindowSelection: ObservableObject {
+    static let shared = LogWindowSelection()
+    private init() {}
+
+    @Published var taskToReveal: UUID?
+}
+
+/// Global Logs window. Thin shell that owns the filter, selection and page size; the
 /// list lives in `LogListContent` so its `@Query` can be rebuilt with a new
 /// predicate or a bigger `fetchLimit` without losing the selection.
 struct LogListView: View {
@@ -18,13 +27,18 @@ struct LogListView: View {
     /// sheet does instead of a whole-table `@Query`.
     static let pageSize = 50
 
+    @Environment(\.modelContext) private var modelContext
+    @ObservedObject private var logSelection = LogWindowSelection.shared
     @State private var filter = LogFilter()
     @State private var limit = LogListView.pageSize
+    @State private var selection: Set<ExecutionLog> = []
+    @State private var contentID = UUID()
 
     var body: some View {
         LogListContent(
             filter: filter,
             limit: limit,
+            selection: $selection,
             onFilterChange: { newFilter in
                 filter = newFilter
                 // A new filter is a new list — start it from the first page.
@@ -32,6 +46,26 @@ struct LogListView: View {
             },
             onLoadMore: { limit += Self.pageSize }
         )
+        .id(contentID)
+        .onAppear { revealRequestedTask() }
+        .onChange(of: logSelection.taskToReveal) { _, _ in
+            revealRequestedTask()
+        }
+    }
+
+    private func revealRequestedTask() {
+        guard let taskID = logSelection.taskToReveal else { return }
+        let latestLog = (try? modelContext.fetch(
+            ExecutionLogQuery.recent(taskID: taskID, limit: 1)
+        ))?.first
+
+        filter = LogFilter(taskID: taskID, status: nil)
+        limit = Self.pageSize
+        selection = latestLog.map { [$0] } ?? []
+        // Recreate the list so an existing window also scrolls back to the
+        // newest row, even when the same task is requested again.
+        contentID = UUID()
+        logSelection.taskToReveal = nil
     }
 }
 
@@ -51,18 +85,20 @@ private struct LogListContent: View {
     /// way the user already has the tasks in their head.
     @Query(sort: \ScheduledTask.createdAt, order: .reverse) private var tasks: [ScheduledTask]
 
-    @State private var selection: Set<ExecutionLog> = []
+    @Binding private var selection: Set<ExecutionLog>
     @State private var logsToDelete: [ExecutionLog] = []
     @State private var showingDeleteAlert = false
 
     init(
         filter: LogFilter,
         limit: Int,
+        selection: Binding<Set<ExecutionLog>>,
         onFilterChange: @escaping (LogFilter) -> Void,
         onLoadMore: @escaping () -> Void
     ) {
         self.filter = filter
         self.limit = limit
+        _selection = selection
         self.onFilterChange = onFilterChange
         self.onLoadMore = onLoadMore
         _logs = Query(ExecutionLogQuery.recent(
