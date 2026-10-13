@@ -157,17 +157,13 @@ struct QuickLauncherView: View {
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             // Only intercept while our launcher panel is up — otherwise the
             // monitor would steal arrows everywhere else in the app.
-            guard NSApp.keyWindow is QuickLauncherPanel else { return event }
+            guard let panel = NSApp.keyWindow as? QuickLauncherPanel else { return event }
 
-            // IME guard: when the user is mid-composition (e.g. typing pinyin
-            // and the Chinese candidate panel is showing), the field editor
-            // has marked text. Enter/space/numbers are part of the IME's
-            // candidate-selection contract — must NOT be intercepted, or we
-            // run the task while the user was just trying to commit "你好".
-            // Cast to NSTextView (the concrete field-editor type) since the
-            // base NSText doesn't expose `hasMarkedText()`.
-            if let editor = NSApp.keyWindow?.fieldEditor(false, for: nil) as? NSTextView,
-               editor.hasMarkedText() {
+            // SwiftUI's search field can handle text input without using the
+            // window's traditional NSTextView field editor. Ask the active
+            // input client so candidate-confirmation keys reach the IME.
+            if let inputClient = panel.firstResponder as? NSTextInputClient,
+               inputClient.hasMarkedText() {
                 return event
             }
 
@@ -226,7 +222,8 @@ struct QuickLauncherView: View {
                     selectedIndex = 0
                     selectedActionIndex = 0
                 }
-                .onSubmit { performSelectedAction() }
+                // Return is handled only by the key monitor, which checks
+                // composition before the IME commits its marked text.
 
             BrandMark(size: 12, tint: .accentColor)
                 .padding(5)
