@@ -378,37 +378,19 @@ struct QuickLauncherView: View {
         } else {
             let context = modelContext
             Task {
-                _ = await ScriptExecutor.shared.execute(task: task, modelContext: context)
+                await ManualTaskRunner.shared.run(task: task, modelContext: context, recordLauncherUsage: true)
             }
-            QuickLauncherUsage.markUsed(task.id)
-            ActionToast.notify(.started(taskName: name), taskId: task.id, wantsBanner: task.notifyOnAction)
-            ToastCenter.shared.running(L10n.tr("toast.task.started", name))
         }
         onDismiss()
     }
 
-    /// ⌘R — restart. If the task is running, cancel and wait briefly for
-    /// SIGTERM to take effect before launching a fresh process. The wait is
-    /// short on purpose: scripts that ignore SIGTERM will overlap with the
-    /// new run for ~200ms, but that's preferable to blocking the UI thread
-    /// on `waitUntilExit`.
+    /// Confirm run parameters before stopping the existing process.
     private func restartSelected() {
         guard let task = selectedTask else { return }
-        let name = task.name
         let context = modelContext
-        let wasRunning = scheduler.runningTaskIDs.contains(task.id)
-        if wasRunning {
-            ScriptExecutor.shared.cancel(taskId: task.id)
-        }
         Task {
-            if wasRunning {
-                try? await Task.sleep(for: .milliseconds(200))
-            }
-            _ = await ScriptExecutor.shared.execute(task: task, modelContext: context)
+            await ManualTaskRunner.shared.run(task: task, modelContext: context, restart: true, recordLauncherUsage: true)
         }
-        QuickLauncherUsage.markUsed(task.id)
-        ActionToast.notify(.restarted(taskName: name), taskId: task.id, wantsBanner: task.notifyOnAction)
-        ToastCenter.shared.restart(L10n.tr("toast.task.restarted", name))
         onDismiss()
     }
 

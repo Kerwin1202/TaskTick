@@ -75,19 +75,16 @@ final class CLIBridge {
                 }
                 return
             }
-            Task { _ = await ScriptExecutor.shared.execute(task: task, modelContext: context) }
-            ActionToast.notify(.started(taskName: task.name), taskId: task.id, wantsBanner: wantsBanner)
+            Task {
+                await ManualTaskRunner.shared.run(task: task, modelContext: context, promptUser: forceBanner, forceBanner: forceBanner)
+            }
         case .stop:
             ScriptExecutor.shared.cancel(taskId: task.id)
             ActionToast.notify(.stopped(taskName: task.name), taskId: task.id, wantsBanner: wantsBanner)
         case .restart:
-            let wasRunning = TaskScheduler.shared.runningTaskIDs.contains(task.id)
-            if wasRunning { ScriptExecutor.shared.cancel(taskId: task.id) }
             Task {
-                if wasRunning { try? await Task.sleep(for: .milliseconds(200)) }
-                _ = await ScriptExecutor.shared.execute(task: task, modelContext: context)
+                await ManualTaskRunner.shared.run(task: task, modelContext: context, restart: true, promptUser: forceBanner, forceBanner: forceBanner)
             }
-            ActionToast.notify(.restarted(taskName: task.name), taskId: task.id, wantsBanner: wantsBanner)
         case .reveal:
             MainWindowSelection.shared.taskToReveal = task
             NotificationCenter.default.post(name: .revealTaskInMain, object: nil)

@@ -142,6 +142,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// running-processes dict, so re-entry is a no-op.
     @MainActor
     static func gracefulShutdown() {
+        RunParametersPrompt.shared.cancelAll()
         ScriptExecutor.shared.cancelAll(graceful: 0.2)
         TaskScheduler.shared.stop()
         TaskScheduler.shared.stopAdoptionPoll()
@@ -331,6 +332,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @MainActor
     private func hideToMenuBar(_ sender: NSApplication) {
+        RunParametersPrompt.shared.cancelAll()
         MenuBarHideNotice.suppressBriefly()
         for window in sender.windows where window.isVisible && window.canBecomeMain {
             window.close()

@@ -6,19 +6,26 @@ struct WorkingDirectoryField: View {
     @Binding var path: String
 
     var body: some View {
-        HStack(spacing: 6) {
-            TextField(L10n.tr("editor.working_dir"), text: $path, prompt: Text(L10n.tr("editor.working_dir.placeholder")))
+        VStack(alignment: .leading, spacing: 6) {
+            Text(L10n.tr("editor.working_dir"))
+            HStack(spacing: 6) {
+                TextField(L10n.tr("editor.working_dir"), text: $path, prompt: Text(L10n.tr("editor.working_dir.placeholder")))
+                    .labelsHidden()
+                    .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.leading)
 
-            Button {
-                chooseDirectory()
-            } label: {
-                Image(systemName: "folder")
-                    .foregroundStyle(.secondary)
+                Button {
+                    chooseDirectory()
+                } label: {
+                    Image(systemName: "folder")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.borderless)
+                .pointerCursor()
+                .help(L10n.tr("editor.working_dir.choose"))
             }
-            .buttonStyle(.borderless)
-            .pointerCursor()
-            .help(L10n.tr("editor.working_dir.choose"))
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func chooseDirectory() {

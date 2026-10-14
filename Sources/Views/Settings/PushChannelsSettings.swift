@@ -231,6 +231,8 @@ struct PushChannelEditorSheet: View {
                 }
             }
             .formStyle(.grouped)
+            .textFieldStyle(.roundedBorder)
+            .multilineTextAlignment(.leading)
 
             Divider()
 
@@ -321,7 +323,9 @@ struct PushChannelEditorSheet: View {
                     .font(.system(size: 11, design: .monospaced))
                     .frame(height: 44)
                     .scrollContentBackground(.hidden)
-                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator))
+                    .padding(6)
+                    .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
             }
 
             // Hidden for GET/HEAD: those carry their payload in the URL, so a
@@ -333,7 +337,9 @@ struct PushChannelEditorSheet: View {
                         .font(.system(size: 11, design: .monospaced))
                         .frame(height: 88)
                         .scrollContentBackground(.hidden)
-                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator))
+                        .padding(6)
+                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                 }
             }
         } header: {

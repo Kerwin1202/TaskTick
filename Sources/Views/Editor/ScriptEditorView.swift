@@ -4,13 +4,24 @@ import TaskTickCore
 
 struct ScriptEditorView: View {
     @Binding var scriptBody: String
+    var parameters: [RunParameter] = []
+    var insertion: ScriptEditorInsertion? = nil
     @State private var showExpandedEditor = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
+            if let insertion, !parameters.isEmpty {
+                HStack {
+                    Spacer()
+                    variableMenu(parameters: parameters, insertion: insertion, text: $scriptBody)
+                }
+            }
             ZStack(alignment: .topTrailing) {
-                CodeTextEditor(text: $scriptBody)
+                CodeTextEditor(text: $scriptBody, insertion: insertion)
                     .frame(minHeight: 140, maxHeight: 280)
+                    .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
 
                 Button {
                     showExpandedEditor = true
@@ -32,7 +43,7 @@ struct ScriptEditorView: View {
                 .foregroundStyle(.tertiary)
         }
         .sheet(isPresented: $showExpandedEditor) {
-            ExpandedScriptEditor(scriptBody: $scriptBody)
+            ExpandedScriptEditor(scriptBody: $scriptBody, parameters: parameters, insertion: insertion)
         }
     }
 }
@@ -41,6 +52,8 @@ struct ScriptEditorView: View {
 
 struct ExpandedScriptEditor: View {
     @Binding var scriptBody: String
+    var parameters: [RunParameter] = []
+    var insertion: ScriptEditorInsertion? = nil
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -49,6 +62,9 @@ struct ExpandedScriptEditor: View {
                 Text(L10n.tr("editor.section.script"))
                     .font(.headline)
                 Spacer()
+                if let insertion, !parameters.isEmpty {
+                    variableMenu(parameters: parameters, insertion: insertion, text: $scriptBody)
+                }
                 Button(L10n.tr("editor.script.collapse")) {
                     dismiss()
                 }
@@ -58,10 +74,57 @@ struct ExpandedScriptEditor: View {
 
             Divider()
 
-            CodeTextEditor(text: $scriptBody)
+            CodeTextEditor(text: $scriptBody, insertion: insertion, isExpanded: true)
+                .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                 .padding(8)
         }
         .frame(width: 680, height: 480)
+    }
+}
+
+@MainActor
+private func variableMenu(parameters: [RunParameter], insertion: ScriptEditorInsertion, text: Binding<String>) -> some View {
+    Menu {
+        ForEach(parameters) { parameter in
+            Button("\(parameter.name) · ${\(parameter.variableName)}") {
+                insertion.insertVariable(parameter.variableName, into: text)
+            }
+        }
+    } label: {
+        Label(L10n.tr("run_parameters.insert_variable"), systemImage: "text.insert")
+    }
+    .menuStyle(.borderlessButton)
+    .fixedSize()
+    .pointerCursor()
+}
+
+/// Keeps the script caret available while the user edits the parameter fields.
+@MainActor
+final class ScriptEditorInsertion {
+    weak var textView: NSTextView?
+    weak var expandedTextView: NSTextView?
+    var selectedRange = NSRange(location: NSNotFound, length: 0)
+
+    func insertVariable(_ name: String, into text: Binding<String>) {
+        guard name.range(of: "^[A-Za-z_][A-Za-z0-9_]*$", options: .regularExpression) != nil else { return }
+        let reference = "\"${\(name)}\""
+        let editor = expandedTextView?.window?.isVisible == true ? expandedTextView : textView
+        let source = text.wrappedValue as NSString
+        let selection = selectedRange.location == NSNotFound ? editor?.selectedRange() ?? selectedRange : selectedRange
+        let location = selection.location == NSNotFound ? source.length : min(selection.location, source.length)
+        let range = NSRange(location: location, length: min(selection.length, source.length - location))
+        if let editor, let window = editor.window, editor.string == text.wrappedValue {
+            window.makeFirstResponder(editor)
+            editor.insertText(reference, replacementRange: range)
+            editor.scrollRangeToVisible(editor.selectedRange())
+            selectedRange = editor.selectedRange()
+        } else {
+            // A scrolled-out Form row may no longer have a native text view.
+            text.wrappedValue = source.replacingCharacters(in: range, with: reference)
+            selectedRange = NSRange(location: location + (reference as NSString).length, length: 0)
+        }
     }
 }
 
@@ -69,9 +132,11 @@ struct ExpandedScriptEditor: View {
 
 struct CodeTextEditor: NSViewRepresentable {
     @Binding var text: String
+    var insertion: ScriptEditorInsertion? = nil
+    var isExpanded = false
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text)
+        Coordinator(text: $text, insertion: insertion)
     }
 
     func makeNSView(context: Context) -> NSScrollView {
@@ -102,32 +167,54 @@ struct CodeTextEditor: NSViewRepresentable {
 
         scrollView.documentView = textView
         context.coordinator.textView = textView
+        if isExpanded {
+            insertion?.expandedTextView = textView
+        } else {
+            insertion?.textView = textView
+        }
 
         textView.string = text
+        restoreSelection(in: textView)
 
         return scrollView
     }
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView else { return }
+        context.coordinator.text = $text
         if textView.string != text {
-            let selectedRange = textView.selectedRange()
+            let selectedRange = insertion?.selectedRange ?? textView.selectedRange()
             textView.string = text
-            textView.setSelectedRange(selectedRange)
+            restoreSelection(in: textView, range: selectedRange)
         }
+    }
+
+    private func restoreSelection(in textView: NSTextView, range: NSRange? = nil) {
+        let range = range ?? insertion?.selectedRange ?? NSRange(location: NSNotFound, length: 0)
+        let length = (textView.string as NSString).length
+        let location = range.location == NSNotFound ? length : min(range.location, length)
+        textView.setSelectedRange(NSRange(location: location, length: min(range.length, length - location)))
     }
 
     class Coordinator: NSObject, NSTextViewDelegate {
         var text: Binding<String>
         weak var textView: NSTextView?
+        let insertion: ScriptEditorInsertion?
 
-        init(text: Binding<String>) {
+        init(text: Binding<String>, insertion: ScriptEditorInsertion?) {
             self.text = text
+            self.insertion = insertion
         }
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
             text.wrappedValue = textView.string
+        }
+
+        func textViewDidChangeSelection(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView,
+                  textView.window?.firstResponder === textView else { return }
+            insertion?.selectedRange = textView.selectedRange()
         }
     }
 }

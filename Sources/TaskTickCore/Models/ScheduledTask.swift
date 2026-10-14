@@ -200,6 +200,7 @@ public final class ScheduledTask {
     public var nextRunAt: Date?
     public var workingDirectory: String?
     public var environmentVariablesJSON: String?
+    public var runParametersJSON: String? = nil
     public var timeoutSeconds: Int
     public var notifyOnSuccess: Bool
     public var notifyOnFailure: Bool
@@ -424,6 +425,17 @@ public final class ScheduledTask {
                 return
             }
             environmentVariablesJSON = String(data: data, encoding: .utf8)
+        }
+    }
+
+    public var runParametersConfiguration: RunParametersConfiguration? {
+        get {
+            guard let data = runParametersJSON?.data(using: .utf8) else { return nil }
+            return try? JSONDecoder().decode(RunParametersConfiguration.self, from: data)
+        }
+        set {
+            runParametersJSON = newValue.flatMap { try? JSONEncoder().encode($0) }
+                .flatMap { String(data: $0, encoding: .utf8) }
         }
     }
 

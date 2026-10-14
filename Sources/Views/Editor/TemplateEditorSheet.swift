@@ -71,6 +71,8 @@ struct TemplateEditorSheet: View {
         Form {
             Section(L10n.tr("editor.section.basic")) {
                 TextField(L10n.tr("editor.name"), text: $name, prompt: Text(L10n.tr("template.save.name_placeholder")))
+                    .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.leading)
 
                 HStack {
                     Picker(L10n.tr("template.category"), selection: $category) {
@@ -97,6 +99,8 @@ struct TemplateEditorSheet: View {
 
                 if isCreatingCategory {
                     TextField(L10n.tr("template.category.new_placeholder"), text: $newCategoryName)
+                        .textFieldStyle(.roundedBorder)
+                        .multilineTextAlignment(.leading)
                 }
 
             }
@@ -106,6 +110,9 @@ struct TemplateEditorSheet: View {
                     .font(.body)
                     .frame(height: 56)
                     .scrollContentBackground(.hidden)
+                    .padding(6)
+                    .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
             }
         }
         .formStyle(.grouped)

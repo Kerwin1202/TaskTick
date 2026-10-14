@@ -723,3 +723,54 @@
 
 /* Time */
 "time.just_now" = "剛剛";
+
+/* Editor tabs */
+"editor.tab.basic_schedule" = "基本與排程";
+"editor.tab.notification_push" = "通知與推播";
+
+/* Run parameters */
+"run_parameters.title" = "執行前參數";
+"run_parameters.enable" = "執行前詢問參數";
+"run_parameters.parameter" = "參數";
+"run_parameters.choice" = "固定選項";
+"run_parameters.text" = "文字輸入";
+"run_parameters.name" = "顯示名稱";
+"run_parameters.kind" = "輸入方式";
+"run_parameters.variable" = "傳入的環境變數";
+"run_parameters.default_value" = "預設值";
+"run_parameters.default" = "預設";
+"run_parameters.option_name" = "選項名稱";
+"run_parameters.option_value" = "傳入值";
+"run_parameters.option_n" = "選項 %lld";
+"run_parameters.use_default" = "預設使用%@";
+"run_parameters.remove_parameter" = "刪除參數";
+"run_parameters.remove_option" = "刪除選項";
+"run_parameters.add_parameter" = "新增參數";
+"run_parameters.add_option" = "新增選項";
+"run_parameters.auto_run" = "無操作時自動執行";
+"run_parameters.countdown" = "%lld 秒後自動執行";
+"run_parameters.hint" = "參數透過環境變數傳入命令；切換選項、修改輸入或點擊「取消倒數」後等待手動確認。";
+"run_parameters.automatic_hint" = "排程、程式啟動和命令列觸發時使用預設值。";
+"run_parameters.confirm_title" = "執行前確認";
+"run_parameters.remaining" = "%lld 秒後使用預設值執行";
+"run_parameters.paused" = "已取消倒數，請確認後執行。";
+"run_parameters.confirm_hint" = "確認參數後執行。";
+"run_parameters.interaction_hint" = "切換選項或修改輸入會取消倒數";
+"run_parameters.run_now" = "立即執行";
+"run_parameters.insert_variable" = "插入變數";
+"run_parameters.reference" = "命令中引用：%@";
+"run_parameters.usage_hint" = "值已透過環境變數傳入，無需 export。使用雙引號引用變數，單引號不會展開。echo 顯示值，cat 則讀取該值對應的檔案；傳給腳本可寫 ./script.sh \"${VERSION}\"。";
+"run_parameters.cancel_run" = "取消執行";
+"run_parameters.cancel_countdown" = "取消倒數";
+"run_parameters.log_title" = "本次執行參數";
+"run_parameters.error.empty" = "請新增至少一個參數。";
+"run_parameters.error.variable" = "請填寫參數名稱，並為每個參數設定有效且不重複的環境變數名稱。";
+"run_parameters.error.options" = "請填寫每個選項的名稱和傳入值。";
+"run_parameters.error.default" = "自動執行需要為每個文字參數填寫非空的預設值。";
+"run_parameters.error.input" = "請為每個參數填寫非空的值。";
+"run_parameters.error.changed" = "參數設定已修改，請重新執行任務以選擇最新的參數。";
+"run_parameters.error.stopping" = "原程序仍在停止中，請在結束後重試。";
+"run_parameters.preview" = "預覽參數";
+"run_parameters.preview_hint" = "僅預覽，不執行實際命令";
+"run_parameters.confirm" = "確認";
+"run_parameters.error.configuration" = "參數設定無效，請重新設定；倒數範圍為 0–300 秒。";

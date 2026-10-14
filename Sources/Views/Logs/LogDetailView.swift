@@ -31,88 +31,7 @@ struct LogDetailView: View {
         // a taller blank area under a fixed-height box. The metadata above it
         // keeps its own scroller so it stays reachable in a short window.
         VStack(alignment: .leading, spacing: 0) {
-            // Metadata is short and fixed — no scroller, so it can't get
-            // greedy and steal height from the output pane below.
-            VStack(alignment: .leading, spacing: 20) {
-                // Header
-                HStack(alignment: .top, spacing: 14) {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(statusGradient)
-                        .frame(width: 44, height: 44)
-                        .overlay {
-                            Image(systemName: log.status.iconName)
-                                .font(.title3)
-                                .scaleEffect(log.status.iconScale)
-                                .foregroundStyle(.white)
-                        }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(log.task?.name ?? L10n.tr("log.unknown_task"))
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        Text(log.startedAt.formatted(date: .complete, time: .standard))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    StatusBadge(status: log.status)
-                }
-
-                Divider()
-
-                // Info card
-                GlassCard {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Label(L10n.tr("log.detail.title"), systemImage: "info.circle")
-                            .font(.headline)
-
-                        VStack(spacing: 8) {
-                            infoRow(L10n.tr("log.detail.trigger"),
-                                    value: log.triggeredBy.displayName)
-
-                            if let exitCode = log.exitCode {
-                                infoRow(L10n.tr("log.detail.exit_code"), value: "\(exitCode)")
-                            }
-
-                            if let duration = log.durationMs {
-                                infoRow(L10n.tr("log.detail.duration"), value: ExecutionLog.formatDuration(duration))
-                            }
-
-                            if let finished = log.finishedAt {
-                                infoRow(L10n.tr("log.detail.finished"),
-                                        value: finished.formatted(date: .abbreviated, time: .standard))
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                if log.status == .timeout {
-                    TimeoutNoticeView(timeoutSeconds: log.task?.timeoutSeconds)
-                }
-
-                if log.status == .failure, SudoTTYFailure.matches(stderr: log.stderr) {
-                    SudoNoticeView()
-                }
-
-                // Running indicator
-                if log.status == .running {
-                    GlassCard {
-                        HStack {
-                            Text(L10n.tr("status.running"))
-                                .font(.subheadline)
-                                .foregroundStyle(.blue)
-                            Spacer()
-                            ProgressView()
-                                .controlSize(.small)
-                        }
-                    }
-                }
-            }
-            .padding(20)
-
+            metadataSection
             // Combined output (terminal-like). Color reflects run status.
             let combined = [currentStdout, currentStderr]
                 .compactMap { $0?.isEmpty == false ? $0 : nil }
@@ -133,6 +52,122 @@ struct LogDetailView: View {
                 .frame(maxHeight: .infinity)
             }
         }
+    }
+
+    @ViewBuilder
+    private var metadataSection: some View {
+        if log.runParameterValues.isEmpty {
+            metadataContent
+        } else {
+            // Keep the output pane usable when a run carries many parameters.
+            ScrollView { metadataContent }
+                .frame(maxHeight: 300)
+        }
+    }
+
+    private var metadataContent: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // Header
+            HStack(alignment: .top, spacing: 14) {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(statusGradient)
+                    .frame(width: 44, height: 44)
+                    .overlay {
+                        Image(systemName: log.status.iconName)
+                            .font(.title3)
+                            .scaleEffect(log.status.iconScale)
+                            .foregroundStyle(.white)
+                    }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(log.task?.name ?? L10n.tr("log.unknown_task"))
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text(log.startedAt.formatted(date: .complete, time: .standard))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                StatusBadge(status: log.status)
+            }
+
+            Divider()
+
+            // Info card
+            GlassCard {
+                VStack(alignment: .leading, spacing: 10) {
+                    Label(L10n.tr("log.detail.title"), systemImage: "info.circle")
+                        .font(.headline)
+
+                    VStack(spacing: 8) {
+                        infoRow(L10n.tr("log.detail.trigger"),
+                                value: log.triggeredBy.displayName)
+
+                        if let exitCode = log.exitCode {
+                            infoRow(L10n.tr("log.detail.exit_code"), value: "\(exitCode)")
+                        }
+
+                        if let duration = log.durationMs {
+                            infoRow(L10n.tr("log.detail.duration"), value: ExecutionLog.formatDuration(duration))
+                        }
+
+                        if let finished = log.finishedAt {
+                            infoRow(L10n.tr("log.detail.finished"),
+                                    value: finished.formatted(date: .abbreviated, time: .standard))
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if !log.runParameterValues.isEmpty {
+                GlassCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label(L10n.tr("run_parameters.log_title"), systemImage: "list.bullet")
+                            .font(.headline)
+                        ForEach(Array(log.runParameterValues.enumerated()), id: \.offset) { _, parameter in
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack {
+                                    Text(parameter.name)
+                                    Spacer()
+                                    if let label = parameter.optionLabel { Text(label) }
+                                }
+                                Text("\(parameter.variableName)=\(parameter.value)")
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+
+            if log.status == .timeout {
+                TimeoutNoticeView(timeoutSeconds: log.task?.timeoutSeconds)
+            }
+
+            if log.status == .failure, SudoTTYFailure.matches(stderr: log.stderr) {
+                SudoNoticeView()
+            }
+
+            // Running indicator
+            if log.status == .running {
+                GlassCard {
+                    HStack {
+                        Text(L10n.tr("status.running"))
+                            .font(.subheadline)
+                            .foregroundStyle(.blue)
+                        Spacer()
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                }
+            }
+        }
+        .padding(20)
     }
 
     private var statusGradient: LinearGradient {

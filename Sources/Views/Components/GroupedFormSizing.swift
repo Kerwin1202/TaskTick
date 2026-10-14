@@ -36,13 +36,14 @@ extension View {
     /// screen — its bottom, Save button included, ran off the display with
     /// nothing left to scroll (issue #55). `maxHeight` caps the form at what the
     /// window's screen can show, and past that the form scrolls as usual.
-    func groupedFormSizing(minHeight: CGFloat) -> some View {
-        modifier(GroupedFormSizing(minHeight: minHeight))
+    func groupedFormSizing(minHeight: CGFloat, maxHeight: CGFloat? = nil) -> some View {
+        modifier(GroupedFormSizing(minHeight: minHeight, maxHeight: maxHeight))
     }
 }
 
 private struct GroupedFormSizing: ViewModifier {
     let minHeight: CGFloat
+    let maxHeight: CGFloat?
 
     /// Visible height of the screen the window is on. Seeded from the main
     /// screen so the very first layout is already capped, then replaced by the
@@ -61,7 +62,7 @@ private struct GroupedFormSizing: ViewModifier {
     private static let smallestCap: CGFloat = 240
 
     func body(content: Content) -> some View {
-        let cap = max(Self.smallestCap, screenHeight - Self.windowChrome)
+        let cap = min(maxHeight ?? .infinity, max(Self.smallestCap, screenHeight - Self.windowChrome))
         content
             // min is clamped to the cap: a floor above the ceiling is a
             // contradictory frame, and the ceiling is the one that matters.
@@ -132,11 +133,20 @@ private final class ScreenFittingView: NSView {
     private func keepWindowOnScreen() {
         guard let window, let visible = window.screen?.visibleFrame else { return }
         let frame = window.frame
-        guard frame.minY < visible.minY else { return }
+        var origin = frame.origin
+        // A wider command tab must also stay inside the display horizontally.
+        if frame.maxX > visible.maxX {
+            origin.x = max(visible.minX, visible.maxX - frame.width)
+        }
+        if frame.minX < visible.minX {
+            origin.x = visible.minX
+        }
         // Slide up just far enough to bring the bottom back, but never push the
         // title bar above the top — if the window is somehow still taller than
         // the screen, keeping it draggable matters more.
-        let y = min(visible.minY, visible.maxY - frame.height)
-        window.setFrameOrigin(NSPoint(x: frame.minX, y: y))
+        if frame.minY < visible.minY {
+            origin.y = min(visible.minY, visible.maxY - frame.height)
+        }
+        if origin != frame.origin { window.setFrameOrigin(origin) }
     }
 }

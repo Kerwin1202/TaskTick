@@ -294,10 +294,8 @@ struct MenuBarTaskRow: View {
                 Button {
                     let context = modelContext
                     Task {
-                        _ = await ScriptExecutor.shared.execute(task: task, modelContext: context)
+                        await ManualTaskRunner.shared.run(task: task, modelContext: context)
                     }
-                    ActionToast.notify(.started(taskName: task.name), taskId: task.id, wantsBanner: task.notifyOnAction)
-                    ToastCenter.shared.running(L10n.tr("toast.task.started", task.name))
                 } label: {
                     Image(systemName: "play.fill")
                         .font(.caption)
@@ -334,10 +332,8 @@ struct MenuBarTaskRow: View {
             } else {
                 let context = modelContext
                 Task {
-                    _ = await ScriptExecutor.shared.execute(task: task, modelContext: context)
+                    await ManualTaskRunner.shared.run(task: task, modelContext: context)
                 }
-                ActionToast.notify(.started(taskName: task.name), taskId: task.id, wantsBanner: task.notifyOnAction)
-                ToastCenter.shared.running(L10n.tr("toast.task.started", task.name))
             }
         }
         .pointerCursor()

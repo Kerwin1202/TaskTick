@@ -187,9 +187,8 @@ struct TaskDetailView: View {
                             } else {
                                 Button {
                                     Task {
-                                        _ = await ScriptExecutor.shared.execute(task: task, modelContext: modelContext)
+                                        await ManualTaskRunner.shared.run(task: task, modelContext: modelContext)
                                     }
-                                    ActionToast.notify(.started(taskName: task.name), taskId: task.id, wantsBanner: task.notifyOnAction)
                                 } label: {
                                     Label(L10n.tr("task.detail.run"), systemImage: "play.fill")
                                 }

@@ -88,7 +88,7 @@ final class ScriptExecutor: ObservableObject {
 
     /// Run a task's script and return the execution log entry.
     @discardableResult
-    func execute(task: ScheduledTask, triggeredBy: TriggerType = .manual, modelContext: ModelContext) async -> ExecutionLog {
+    func execute(task: ScheduledTask, triggeredBy: TriggerType = .manual, modelContext: ModelContext, parameterValues: [RunParameterValue]? = nil) async -> ExecutionLog {
         // Mark as running so every UI surface (list dot animation, menu bar
         // spinner, detail view stop button) reacts consistently regardless of
         // which entry point triggered the run. Set is idempotent, so callers
@@ -98,6 +98,17 @@ final class ScriptExecutor: ObservableObject {
 
         let log = ExecutionLog(task: task, triggeredBy: triggeredBy)
         modelContext.insert(log)
+        let parameterConfig = (task.shortcutName?.isEmpty ?? true) ? task.runParametersConfiguration : nil
+        let selectedParameters = parameterValues ?? parameterConfig?.resolve() ?? []
+        let parameterError: String? = {
+            if (task.shortcutName?.isEmpty ?? true), task.runParametersJSON != nil, parameterConfig == nil {
+                return L10n.tr("run_parameters.error.variable")
+            }
+            guard let parameterConfig, parameterConfig.isEnabled else { return nil }
+            return parameterConfig.validationError(requireDefaults: parameterValues == nil)
+                ?? (parameterValues == nil && parameterConfig.resolve() == nil ? L10n.tr("run_parameters.error.default") : nil)
+        }()
+        log.runParameterValues = selectedParameters
         // Keep this denormalized counter hot-path friendly. The scheduler and UI
         // must not fault and walk an unbounded to-many relationship on every run.
         task.executionCount += 1
@@ -115,7 +126,10 @@ final class ScriptExecutor: ObservableObject {
         let shell = task.shell
         let preRunCommand = task.preRunCommand
         let workingDirectory = task.workingDirectory
-        let envVars = task.environmentVariables
+        var envVars = task.environmentVariables ?? [:]
+        for parameter in selectedParameters {
+            envVars[parameter.variableName] = parameter.value
+        }
         let timeoutSeconds = task.timeoutSeconds
         let taskId = task.id
         let ignoreExitCode = task.ignoreExitCode
@@ -193,7 +207,9 @@ final class ScriptExecutor: ObservableObject {
         }()
 
         let result: ProcessResult
-        if isShortcutTask, let name = shortcutName {
+        if let parameterError {
+            result = ProcessResult(stdout: "", stderr: parameterError, exitCode: 1, status: .failure)
+        } else if isShortcutTask, let name = shortcutName {
             // Invoke /usr/bin/shortcuts directly — no shell wrapping. Working
             // directory and env vars are nil: Shortcuts CLI runs in a system
             // service context that doesn't honor them anyway, and the editor

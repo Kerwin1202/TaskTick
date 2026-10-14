@@ -72,6 +72,7 @@ struct TaskExporter {
         let pushOnlyWhenOutput: Bool?
         let pushTemplateEnabled: Bool?
         let pushTemplate: String?
+        var runParametersConfiguration: RunParametersConfiguration? = nil
     }
 
     /// Export all tasks to a JSON file
@@ -215,7 +216,8 @@ struct TaskExporter {
             pushOnFailure: task.pushOnFailure,
             pushOnlyWhenOutput: task.pushOnlyWhenOutputOverride,
             pushTemplateEnabled: task.pushTemplateEnabledOverride,
-            pushTemplate: task.pushTemplateOverride
+            pushTemplate: task.pushTemplateOverride,
+            runParametersConfiguration: task.runParametersConfiguration
         )
     }
 
@@ -257,6 +259,7 @@ struct TaskExporter {
         )
         task.scriptFilePath = item.scriptFilePath
         task.preRunCommand = item.preRunCommand ?? ""
+        task.runParametersConfiguration = item.runParametersConfiguration
         task.cronExpression = item.cronExpression
         task.intervalSeconds = item.intervalSeconds
         if let st = item.scheduleType {

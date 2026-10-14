@@ -216,9 +216,8 @@ struct TaskListView: View {
             } else {
                 Button(L10n.tr("task.detail.run"), systemImage: "play.fill") {
                     Task {
-                        _ = await ScriptExecutor.shared.execute(task: task, modelContext: modelContext)
+                        await ManualTaskRunner.shared.run(task: task, modelContext: modelContext)
                     }
-                    ActionToast.notify(.started(taskName: task.name), taskId: task.id, wantsBanner: task.notifyOnAction)
                 }
             }
             Button(task.isEnabled ? L10n.tr("task.detail.disable") : L10n.tr("task.detail.enable"),
@@ -280,6 +279,7 @@ struct TaskListView: View {
         copy.hasDate = task.hasDate
         copy.hasTime = task.hasTime
         copy.environmentVariablesJSON = task.environmentVariablesJSON
+        copy.runParametersJSON = task.runParametersJSON
         copy.runMissedExecution = task.runMissedExecution
         copy.runOnLaunch = task.runOnLaunch
         copy.notifyOnAction = task.notifyOnAction

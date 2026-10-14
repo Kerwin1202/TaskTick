@@ -723,3 +723,54 @@
 
 /* Time */
 "time.just_now" = "gerade eben";
+
+/* Editor tabs */
+"editor.tab.basic_schedule" = "Grundlagen & Zeitplan";
+"editor.tab.notification_push" = "Benachrichtigungen & Push";
+
+/* Run parameters */
+"run_parameters.title" = "Run parameters";
+"run_parameters.enable" = "Ask for parameters before running";
+"run_parameters.parameter" = "Parameter";
+"run_parameters.choice" = "Fixed choices";
+"run_parameters.text" = "Text input";
+"run_parameters.name" = "Display name";
+"run_parameters.kind" = "Input type";
+"run_parameters.variable" = "Environment variable";
+"run_parameters.default_value" = "Default value";
+"run_parameters.default" = "Default";
+"run_parameters.option_name" = "Option name";
+"run_parameters.option_value" = "Value";
+"run_parameters.option_n" = "Option %lld";
+"run_parameters.use_default" = "Use %@ by default";
+"run_parameters.remove_parameter" = "Remove parameter";
+"run_parameters.remove_option" = "Remove option";
+"run_parameters.add_parameter" = "Add parameter";
+"run_parameters.add_option" = "Add option";
+"run_parameters.auto_run" = "Run automatically if no action is taken";
+"run_parameters.countdown" = "Run after %lld seconds";
+"run_parameters.hint" = "Values are passed as environment variables. Changing a choice, editing a value or cancelling the countdown waits for manual confirmation.";
+"run_parameters.automatic_hint" = "Scheduled, startup and command-line runs use the configured default values.";
+"run_parameters.confirm_title" = "Confirm run parameters";
+"run_parameters.remaining" = "Run with default values in %lld seconds";
+"run_parameters.paused" = "Countdown cancelled. Confirm to run.";
+"run_parameters.confirm_hint" = "Confirm the parameters to run.";
+"run_parameters.interaction_hint" = "Changing a choice or editing a value cancels the countdown";
+"run_parameters.run_now" = "Run now";
+"run_parameters.insert_variable" = "Insert variable";
+"run_parameters.reference" = "Use in command: %@";
+"run_parameters.usage_hint" = "Values are already available as environment variables; no export is needed. Use double quotes, not single quotes. echo prints a value; cat reads a file with that name. Pass an argument with ./script.sh \"${VERSION}\".";
+"run_parameters.cancel_run" = "Cancel run";
+"run_parameters.cancel_countdown" = "Cancel countdown";
+"run_parameters.log_title" = "Run parameters";
+"run_parameters.error.empty" = "Add at least one parameter.";
+"run_parameters.error.variable" = "Enter a display name and a unique valid environment variable name for each parameter.";
+"run_parameters.error.options" = "Enter a name and value for every choice.";
+"run_parameters.error.default" = "Automatic runs require a non-empty default value for each text parameter.";
+"run_parameters.error.input" = "Enter a non-empty value for every parameter.";
+"run_parameters.error.changed" = "Parameter settings changed. Run the task again to choose the updated values.";
+"run_parameters.error.stopping" = "The previous process is still stopping. Try again once it has exited.";
+"run_parameters.preview" = "Preview parameters";
+"run_parameters.preview_hint" = "Preview only — no command will be executed";
+"run_parameters.confirm" = "Confirm";
+"run_parameters.error.configuration" = "Invalid parameter configuration. Use a countdown between 0 and 300 seconds.";

@@ -135,6 +135,10 @@ struct LogExporter {
         if let code = log.exitCode {
             lines.append(field("Exit Code", "\(code)"))
         }
+        for parameter in log.runParameterValues {
+            let value = parameter.optionLabel.map { "\($0) (\(parameter.value))" } ?? parameter.value
+            lines.append(field("Parameter \(parameter.name) [\(parameter.variableName)]", value))
+        }
         lines.append(sep)
 
         if let stdout = log.stdout, !stdout.isEmpty {

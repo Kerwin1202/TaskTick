@@ -723,3 +723,54 @@
 
 /* Time */
 "time.just_now" = "刚刚";
+
+/* Editor tabs */
+"editor.tab.basic_schedule" = "基本与调度";
+"editor.tab.notification_push" = "通知与推送";
+
+/* Run parameters */
+"run_parameters.title" = "运行前参数";
+"run_parameters.enable" = "运行前询问参数";
+"run_parameters.parameter" = "参数";
+"run_parameters.choice" = "固定选项";
+"run_parameters.text" = "文本输入";
+"run_parameters.name" = "显示名称";
+"run_parameters.kind" = "输入方式";
+"run_parameters.variable" = "传入的环境变量";
+"run_parameters.default_value" = "默认值";
+"run_parameters.default" = "默认";
+"run_parameters.option_name" = "选项名称";
+"run_parameters.option_value" = "传入值";
+"run_parameters.option_n" = "选项 %lld";
+"run_parameters.use_default" = "默认使用%@";
+"run_parameters.remove_parameter" = "删除参数";
+"run_parameters.remove_option" = "删除选项";
+"run_parameters.add_parameter" = "添加参数";
+"run_parameters.add_option" = "添加选项";
+"run_parameters.auto_run" = "无操作时自动运行";
+"run_parameters.countdown" = "%lld 秒后自动运行";
+"run_parameters.hint" = "参数通过环境变量传入命令；切换选项、修改输入或点击「取消倒计时」后等待手动确认。";
+"run_parameters.automatic_hint" = "定时、程序启动和命令行触发时使用默认值。";
+"run_parameters.confirm_title" = "运行前确认";
+"run_parameters.remaining" = "%lld 秒后使用默认值运行";
+"run_parameters.paused" = "已取消倒计时，请确认后运行。";
+"run_parameters.confirm_hint" = "确认参数后运行。";
+"run_parameters.interaction_hint" = "切换选项或修改输入会取消倒计时";
+"run_parameters.run_now" = "立即运行";
+"run_parameters.insert_variable" = "插入变量";
+"run_parameters.reference" = "命令中引用：%@";
+"run_parameters.usage_hint" = "值已通过环境变量传入，无需 export。用双引号引用变量，单引号不会展开。echo 显示值，cat 则读取该值对应的文件；传给脚本可写 ./script.sh \"${VERSION}\"。";
+"run_parameters.cancel_run" = "取消执行";
+"run_parameters.cancel_countdown" = "取消倒计时";
+"run_parameters.log_title" = "本次运行参数";
+"run_parameters.error.empty" = "请添加至少一个参数。";
+"run_parameters.error.variable" = "请填写参数名称，并为每个参数设置有效且不重复的环境变量名。";
+"run_parameters.error.options" = "请填写每个选项的名称和传入值。";
+"run_parameters.error.default" = "自动执行需要为每个文本参数填写非空的默认值。";
+"run_parameters.error.input" = "请为每个参数填写非空的值。";
+"run_parameters.error.changed" = "参数配置已修改，请重新运行任务以选择最新的参数。";
+"run_parameters.error.stopping" = "原进程仍在停止中，请在退出后重试。";
+"run_parameters.preview" = "预览参数";
+"run_parameters.preview_hint" = "仅预览，不执行实际命令";
+"run_parameters.confirm" = "确认";
+"run_parameters.error.configuration" = "参数配置无效，请重新配置；倒计时范围为 0–300 秒。";

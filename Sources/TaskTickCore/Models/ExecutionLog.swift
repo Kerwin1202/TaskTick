@@ -70,6 +70,7 @@ public final class ExecutionLog {
     public var stderr: String?
     public var durationMs: Int?
     public var triggeredByRaw: String = TriggerType.manual.rawValue
+    public var runParameterValuesJSON: String? = nil
 
     /// PID of the process group leader (set by setpgid in ScriptExecutor).
     /// Nil for logs from before this feature shipped, and for runs whose
@@ -101,6 +102,17 @@ public final class ExecutionLog {
     public var triggeredBy: TriggerType {
         get { TriggerType(rawValue: triggeredByRaw) ?? .manual }
         set { triggeredByRaw = newValue.rawValue }
+    }
+
+    public var runParameterValues: [RunParameterValue] {
+        get {
+            guard let data = runParameterValuesJSON?.data(using: .utf8) else { return [] }
+            return (try? JSONDecoder().decode([RunParameterValue].self, from: data)) ?? []
+        }
+        set {
+            runParameterValuesJSON = newValue.isEmpty ? nil : (try? JSONEncoder().encode(newValue))
+                .flatMap { String(data: $0, encoding: .utf8) }
+        }
     }
 
     /// Maximum output size: 512KB

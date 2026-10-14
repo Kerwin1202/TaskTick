@@ -61,12 +61,14 @@ struct TaskEditorView: View {
     // Script
     @State private var shell = "/bin/zsh"
     @State private var scriptBody = ""
+    @State private var scriptInsertion = ScriptEditorInsertion()
     @State private var scriptSource: ScriptSource = .inline
     @State private var scriptFilePath = ""
     @State private var preRunCommand = ""
     @State private var preRunEnabled = false
     @State private var workingDirectory = ""
     @State private var timeoutSeconds = -1
+    @State private var runParameters = RunParametersConfiguration()
 
     // Shortcut (source == .shortcut)
     @State private var shortcutName: String = ""
@@ -131,7 +133,9 @@ struct TaskEditorView: View {
             hasScript = !shortcutName.trimmingCharacters(in: .whitespaces).isEmpty
         }
         let hasValidCron = !useCron || (try? CronExpression(parsing: cronExpression)) != nil
-        return hasName && hasScript && hasValidCron
+        let validParameters = scriptSource == .shortcut
+            || runParameters.validationError(requireDefaults: !isManualOnly || runOnLaunch) == nil
+        return hasName && hasScript && hasValidCron && validParameters
     }
 
     /// Selection surface for the repeat picker: the 16 RepeatType cases plus
@@ -159,11 +163,9 @@ struct TaskEditorView: View {
     }
 
     enum Tab: String, CaseIterable {
-        case basic = "editor.tab.basic"
+        case basic = "editor.tab.basic_schedule"
         case script = "editor.tab.script"
-        case schedule = "editor.tab.schedule"
-        case notification = "editor.tab.notification"
-        case push = "editor.tab.push"
+        case notification = "editor.tab.notification_push"
 
         var title: String { L10n.tr(rawValue) }
 
@@ -171,16 +173,14 @@ struct TaskEditorView: View {
             switch self {
             case .basic: return "square.and.pencil"
             case .script: return "terminal"
-            case .schedule: return "calendar.badge.clock"
             case .notification: return "bell"
-            case .push: return "paperplane"
             }
         }
     }
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            basicTab
+            basicScheduleTab
                 .tabItem { Label(Tab.basic.title, systemImage: Tab.basic.symbol) }
                 .tag(Tab.basic)
 
@@ -188,19 +188,12 @@ struct TaskEditorView: View {
                 .tabItem { Label(Tab.script.title, systemImage: Tab.script.symbol) }
                 .tag(Tab.script)
 
-            scheduleTab
-                .tabItem { Label(Tab.schedule.title, systemImage: Tab.schedule.symbol) }
-                .tag(Tab.schedule)
-
-            notificationTab
+            notificationPushTab
                 .tabItem { Label(Tab.notification.title, systemImage: Tab.notification.symbol) }
                 .tag(Tab.notification)
-
-            pushTab
-                .tabItem { Label(Tab.push.title, systemImage: Tab.push.symbol) }
-                .tag(Tab.push)
         }
-        .frame(width: Self.windowWidth())
+        .groupedFormSizing(minHeight: 560, maxHeight: 560)
+        .frame(width: editorWidth)
         .fixedSize(horizontal: true, vertical: true)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 0) {
@@ -251,9 +244,8 @@ struct TaskEditorView: View {
     /// Since macOS 15 the tab bar sits in the title bar, centered, with the
     /// traffic lights to its left; when it doesn't fit, macOS folds tabs into a
     /// "»" overflow menu and the `.contentSize` window can't be dragged wider
-    /// (issue #39 item 1). A fixed 720 held five tabs in German with little to
-    /// spare; the Push tab (issue #55) made that a coin toss, so — as
-    /// `SettingsView.windowWidth` does — measure the titles about to be drawn.
+    /// (issue #39 item 1). Measure the three localized titles so they fit next
+    /// to the traffic lights, as `SettingsView.windowWidth` does.
     static func windowWidth(screenWidth: CGFloat? = nil) -> CGFloat {
         windowWidth(titles: Tab.allCases.map(\.title), screenWidth: screenWidth)
     }
@@ -282,12 +274,22 @@ struct TaskEditorView: View {
     /// in, plus a gap before the first tab.
     static let titleBarReserve: CGFloat = 96
 
-    // MARK: - Basic Tab
+    // MARK: - Basic and Schedule Tab
 
-    private var basicTab: some View {
+    private var basicScheduleTab: some View {
+        HStack(spacing: 0) {
+            basicForm.frame(width: leftColumnWidth)
+            Divider()
+            scheduleForm.frame(maxWidth: .infinity)
+        }
+    }
+
+    private var basicForm: some View {
         Form {
             Section(L10n.tr("editor.section.basic")) {
                 TextField(L10n.tr("editor.name"), text: $name, prompt: Text(L10n.tr("editor.name.placeholder")))
+                    .textFieldStyle(.roundedBorder)
+                    .multilineTextAlignment(.leading)
                 Toggle(L10n.tr("editor.enabled"), isOn: $isEnabled)
             }
 
@@ -330,12 +332,11 @@ struct TaskEditorView: View {
             }
         }
         .formStyle(.grouped)
-        .groupedFormSizing(minHeight: 237)
     }
 
-    // MARK: - Schedule Tab
+    // MARK: - Schedule Form
 
-    private var scheduleTab: some View {
+    private var scheduleForm: some View {
         Form {
             Section {
                 Toggle(isOn: $isManualOnly) {
@@ -560,7 +561,6 @@ struct TaskEditorView: View {
             } // end !isManualOnly
         }
         .formStyle(.grouped)
-        .groupedFormSizing(minHeight: 428)
         // Schedule DatePickers read wall-clock values in the task's zone —
         // "09:00" with tz Asia/Shanghai means 09:00 Shanghai (issue #41).
         .environment(\.timeZone, editorTimeZone)
@@ -568,7 +568,46 @@ struct TaskEditorView: View {
 
     // MARK: - Script Content Tab
 
+    private var editorWidth: CGFloat {
+        let available = (NSScreen.main?.visibleFrame.width ?? 1440) - 80
+        return max(Self.windowWidth(), min(1040, available))
+    }
+
+    private var leftColumnWidth: CGFloat {
+        editorWidth * 0.4
+    }
+
+    private var insertableParameters: [RunParameter] {
+        guard runParameters.isEnabled else { return [] }
+        return runParameters.parameters.filter {
+            $0.variableName.range(of: "^[A-Za-z_][A-Za-z0-9_]*$", options: .regularExpression) != nil
+        }
+    }
+
     private var scriptContentTab: some View {
+        HStack(spacing: 0) {
+            scriptSettingsForm
+                .frame(width: leftColumnWidth)
+            Divider()
+            scriptCommandForm
+                .frame(maxWidth: .infinity)
+        }
+        .alert(L10n.tr("template.overwrite.title"), isPresented: $showingTemplateOverwriteConfirm) {
+            Button(L10n.tr("editor.cancel"), role: .cancel) {
+                pendingTemplate = nil
+            }
+            Button(L10n.tr("template.overwrite.confirm"), role: .destructive) {
+                if let template = pendingTemplate {
+                    applyTemplate(template)
+                }
+                pendingTemplate = nil
+            }
+        } message: {
+            Text(L10n.tr("template.overwrite.message"))
+        }
+    }
+
+    private var scriptSettingsForm: some View {
         Form {
             if scriptSource != .shortcut {
                 Section(L10n.tr("editor.section.script")) {
@@ -593,6 +632,9 @@ struct TaskEditorView: View {
                             .font(.system(size: 12, design: .monospaced))
                             .frame(minHeight: 60)
                             .scrollContentBackground(.hidden)
+                            .padding(6)
+                            .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                     }
                 } header: {
                     Text(L10n.tr("editor.pre_run.section"))
@@ -601,6 +643,41 @@ struct TaskEditorView: View {
                 }
             }
 
+            Section {
+                Toggle(isOn: Binding(
+                    get: { timeoutSeconds > 0 },
+                    set: { enabled in timeoutSeconds = enabled ? 300 : -1 }
+                )) {
+                    Text(L10n.tr("editor.timeout.enable"))
+                }
+
+                if timeoutSeconds > 0 {
+                    LabeledContent(L10n.tr("editor.timeout")) {
+                        HStack(spacing: 6) {
+                            TextField("", value: $timeoutSeconds, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 80)
+                                .multilineTextAlignment(.trailing)
+                            Text(L10n.tr("editor.timeout.seconds"))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            } footer: {
+                Text(L10n.tr("editor.timeout.hint"))
+            }
+
+            Section {
+                Toggle(L10n.tr("editor.ignore_exit_code"), isOn: $ignoreExitCode)
+            } footer: {
+                Text(L10n.tr("editor.ignore_exit_code.hint"))
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private var scriptCommandForm: some View {
+        Form {
             Section {
                 Picker(L10n.tr("editor.script.source"), selection: $scriptSource) {
                     ForEach(ScriptSource.allCases, id: \.self) { source in
@@ -611,7 +688,7 @@ struct TaskEditorView: View {
 
                 switch scriptSource {
                 case .inline:
-                    ScriptEditorView(scriptBody: $scriptBody)
+                    ScriptEditorView(scriptBody: $scriptBody, parameters: insertableParameters, insertion: scriptInsertion)
                 case .file:
                     HStack {
                         Image(systemName: "doc.text")
@@ -620,7 +697,9 @@ struct TaskEditorView: View {
                         // faster than navigating the open panel to it.
                         TextField(L10n.tr("editor.script.path_placeholder"),
                                   text: $scriptFilePath)
-                            .textFieldStyle(.plain)
+                            .labelsHidden()
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.leading)
                             .font(.system(.body, design: .monospaced))
                             .onSubmit { scriptFilePath = Self.normalizePath(scriptFilePath) }
                         Button(L10n.tr("editor.script.choose_file")) {
@@ -683,51 +762,17 @@ struct TaskEditorView: View {
                 }
             }
 
-            Section {
-                Toggle(isOn: Binding(
-                    get: { timeoutSeconds > 0 },
-                    set: { enabled in timeoutSeconds = enabled ? 300 : -1 }
-                )) {
-                    Text(L10n.tr("editor.timeout.enable"))
-                }
-
-                if timeoutSeconds > 0 {
-                    LabeledContent(L10n.tr("editor.timeout")) {
-                        HStack(spacing: 6) {
-                            TextField("", value: $timeoutSeconds, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 80)
-                                .multilineTextAlignment(.trailing)
-                            Text(L10n.tr("editor.timeout.seconds"))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-            } footer: {
-                Text(L10n.tr("editor.timeout.hint"))
-            }
-
-            Section {
-                Toggle(L10n.tr("editor.ignore_exit_code"), isOn: $ignoreExitCode)
-            } footer: {
-                Text(L10n.tr("editor.ignore_exit_code.hint"))
+            if scriptSource != .shortcut {
+                RunParametersEditor(
+                    configuration: $runParameters,
+                    requiresDefaults: !isManualOnly || runOnLaunch,
+                    onInsertVariable: scriptSource == .inline ? { variable in
+                        scriptInsertion.insertVariable(variable, into: $scriptBody)
+                    } : nil
+                )
             }
         }
         .formStyle(.grouped)
-        .groupedFormSizing(minHeight: 460)
-        .alert(L10n.tr("template.overwrite.title"), isPresented: $showingTemplateOverwriteConfirm) {
-            Button(L10n.tr("editor.cancel"), role: .cancel) {
-                pendingTemplate = nil
-            }
-            Button(L10n.tr("template.overwrite.confirm"), role: .destructive) {
-                if let template = pendingTemplate {
-                    applyTemplate(template)
-                }
-                pendingTemplate = nil
-            }
-        } message: {
-            Text(L10n.tr("template.overwrite.message"))
-        }
     }
 
     // MARK: - Template Picker
@@ -929,7 +974,15 @@ struct TaskEditorView: View {
 
     // MARK: - Notification Tab
 
-    private var notificationTab: some View {
+    private var notificationPushTab: some View {
+        HStack(spacing: 0) {
+            notificationForm.frame(width: leftColumnWidth)
+            Divider()
+            pushForm.frame(maxWidth: .infinity)
+        }
+    }
+
+    private var notificationForm: some View {
         Form {
             Section {
                 Toggle(L10n.tr("editor.notify_success"), isOn: $notifyOnSuccess)
@@ -967,10 +1020,10 @@ struct TaskEditorView: View {
             }
 
             // *What* the banner and the strong reminder say (issue #48), below
-            // the section that picks *when* — the Push tab is laid out the same
+            // the section that picks *when* — the Push column is laid out the same
             // way, so the two read as a pair. Off by default, so the wording
             // only changes when the user asks for it. Remote push has its own
-            // template on its own tab (issue #55) — nothing here reaches it.
+            // template in its own column (issue #55) — nothing here reaches it.
             Section {
                 Toggle(isOn: $notificationTemplateEnabled) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -986,6 +1039,9 @@ struct TaskEditorView: View {
                         .font(.system(size: 12, design: .monospaced))
                         .frame(minHeight: 60)
                         .scrollContentBackground(.hidden)
+                        .padding(6)
+                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                 }
             } header: {
                 Text(L10n.tr("editor.notify_template"))
@@ -1003,7 +1059,6 @@ struct TaskEditorView: View {
             }
         }
         .formStyle(.grouped)
-        .groupedFormSizing(minHeight: 471)
         .onChange(of: shell) { _, newShell in
             if scriptSource == .inline {
                 let newShebang = "#!\(newShell)"
@@ -1026,7 +1081,7 @@ struct TaskEditorView: View {
     /// Remote push, set up on its own (issue #55): where it goes, when, and
     /// what it says. Before the split these rows shared the Notification tab,
     /// where the success/failure switches only ever reached the macOS banner.
-    private var pushTab: some View {
+    private var pushForm: some View {
         Form {
             Section {
                 Toggle(isOn: $pushEnabled) {
@@ -1120,6 +1175,9 @@ struct TaskEditorView: View {
                         .font(.system(size: 12, design: .monospaced))
                         .frame(minHeight: 60)
                         .scrollContentBackground(.hidden)
+                        .padding(6)
+                        .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                 }
             } header: {
                 Text(L10n.tr("editor.push_template"))
@@ -1132,7 +1190,6 @@ struct TaskEditorView: View {
             .disabled(!pushEnabled)
         }
         .formStyle(.grouped)
-        .groupedFormSizing(minHeight: 423)
     }
 
     /// `nil` on the task means "every channel". The editor materializes that
@@ -1326,6 +1383,7 @@ struct TaskEditorView: View {
         loadedTrigger = trigger
 
         // Reset to defaults for new task
+        scriptInsertion.selectedRange = NSRange(location: NSNotFound, length: 0)
         name = ""
         isEnabled = true
         // Stage the shortcut this window is editing. A new task starts empty;
@@ -1355,6 +1413,7 @@ struct TaskEditorView: View {
         preRunEnabled = false
         workingDirectory = ""
         timeoutSeconds = -1
+        runParameters = RunParametersConfiguration()
         shortcutName = ""
         availableShortcuts = []
         isLoadingShortcuts = false
@@ -1404,6 +1463,7 @@ struct TaskEditorView: View {
         preRunEnabled = !task.preRunCommand.isEmpty
         workingDirectory = task.workingDirectory ?? ""
         timeoutSeconds = task.timeoutSeconds
+        runParameters = task.runParametersConfiguration ?? RunParametersConfiguration()
         notifyOnSuccess = task.notifyOnSuccess
         notifyOnFailure = task.notifyOnFailure
         notifyOnAction = task.notifyOnAction
@@ -1478,6 +1538,7 @@ struct TaskEditorView: View {
         target.preRunCommand = preRunCommand
         target.workingDirectory = workingDirectory.isEmpty ? nil : workingDirectory
         target.timeoutSeconds = timeoutSeconds
+        target.runParametersConfiguration = scriptSource == .shortcut ? nil : runParameters
         target.notifyOnSuccess = notifyOnSuccess
         target.notifyOnFailure = notifyOnFailure
         target.notifyOnAction = notifyOnAction
