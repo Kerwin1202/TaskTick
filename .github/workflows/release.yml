@@ -1,0 +1,113 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "版本号，例如 v1.26.3 或 1.26.3"
+        required: true
+        type: string
+  push:
+    tags:
+      - "v[0-9]*.[0-9]*.[0-9]*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      # The source uses macOS 26 APIs; this runner defaults to Xcode 16.4.
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Select version and generate release notes
+        id: version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version || github.ref_name }}
+        run: |
+          VERSION="${REQUESTED_VERSION#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::版本号格式应为 v1.26.3 或 1.26.3"
+            exit 1
+          fi
+          TAG="v${VERSION}"
+
+          # Rebuild an existing tag from its own source, including older tags
+          # created before this workflow was added. New versions use this run's commit.
+          if git show-ref --verify --quiet "refs/tags/$TAG"; then
+            BUILD_COMMIT=$(git rev-parse "refs/tags/${TAG}^{commit}")
+          else
+            BUILD_COMMIT="$GITHUB_SHA"
+          fi
+
+          # Generate notes before checkout so older tags need not contain this script.
+          bash scripts/release-notes.sh "$TAG" "$BUILD_COMMIT" "$GITHUB_REPOSITORY" \
+            > "$RUNNER_TEMP/release-notes.md"
+          git checkout --detach "$BUILD_COMMIT"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "commit=$BUILD_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Building $TAG from $BUILD_COMMIT"
+
+      - name: Build DMGs for Apple Silicon and Intel
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          xcodebuild -version
+          swift --version
+          bash scripts/release.sh "$VERSION" --local-only
+          for ARCH in arm64 x86_64; do
+            DMG=".release/TaskTick-${VERSION}-${ARCH}.dmg"
+            test -s "$DMG"
+            hdiutil verify "$DMG"
+          done
+
+      - name: Save installation packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: TaskTick-${{ steps.version.outputs.tag }}
+          path: .release/*.dmg
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+      - name: Publish to this repository's Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          BUILD_COMMIT: ${{ steps.version.outputs.commit }}
+        run: |
+          ASSETS=(
+            ".release/TaskTick-${VERSION}-arm64.dmg"
+            ".release/TaskTick-${VERSION}-x86_64.dmg"
+          )
+          if gh release view "$TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${ASSETS[@]}" --repo "$GH_REPO" --clobber
+            gh release edit "$TAG" --repo "$GH_REPO" \
+              --notes-file "$RUNNER_TEMP/release-notes.md"
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --repo "$GH_REPO" \
+              --target "$BUILD_COMMIT" \
+              --title "TaskTick $TAG" \
+              --notes-file "$RUNNER_TEMP/release-notes.md"
+          fi
+
+          echo "### TaskTick $TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo "源码提交：\`$BUILD_COMMIT\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "[下载安装包](https://github.com/$GH_REPO/releases/tag/$TAG)" >> "$GITHUB_STEP_SUMMARY"

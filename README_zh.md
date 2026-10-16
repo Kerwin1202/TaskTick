@@ -95,6 +95,10 @@ swift build -c release
 swift run
 ```
 
+### 自动打包发布
+
+支持在 GitHub Actions 中手动输入版本号（例如 `v1.26.3`），自动构建 Apple Silicon 和 Intel 的 `.dmg` 并上传到当前仓库的 Release。也支持推送版本标签后自动发布，详见 [GitHub Actions 打包发布说明](docs/github-release.md)。
+
 ## 捐赠支持
 
 如果 TaskTick 对你有帮助，欢迎[捐赠支持](https://www.lifedever.com/sponsor/)开发者持续维护。
