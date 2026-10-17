@@ -387,6 +387,9 @@
 "settings.notifications" = "알림";
 "settings.notifications.section" = "알림 설정";
 "settings.notifications.enable" = "알림 활성화";
+"settings.notifications.result_style" = "실행 결과 알림 방식";
+"settings.notifications.result_style.system" = "시스템 알림";
+"settings.notifications.result_style.bottom" = "화면 하단 중앙";
 "settings.notifications.on_success" = "작업 성공 시 알림";
 "settings.notifications.on_failure" = "작업 실패 시 알림";
 "settings.notifications.hint" = "전역 스위치입니다. 비활성화하면 개별 작업에서 알림이 활성화되어 있어도 알림이 전송되지 않습니다.";

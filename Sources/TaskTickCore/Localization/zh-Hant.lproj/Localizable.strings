@@ -387,6 +387,9 @@
 "settings.notifications" = "通知";
 "settings.notifications.section" = "通知設定";
 "settings.notifications.enable" = "啟用通知";
+"settings.notifications.result_style" = "執行結果通知方式";
+"settings.notifications.result_style.system" = "系統通知";
+"settings.notifications.result_style.bottom" = "螢幕底部置中";
 "settings.notifications.on_success" = "任務成功時通知";
 "settings.notifications.on_failure" = "任務失敗時通知";
 "settings.notifications.hint" = "這是全域開關。關閉後，即使任務單獨開啟了通知，也不會傳送提醒。";

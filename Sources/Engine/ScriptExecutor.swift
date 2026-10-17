@@ -308,10 +308,11 @@ final class ScriptExecutor: ObservableObject {
         }
 
         if globalNotificationsEnabled && alertRules.notification.fires(succeeded: succeeded, hasOutput: hasOutput) {
-            NotificationManager.shared.sendNotification(
+            NotificationManager.shared.sendTaskResult(
                 title: title,
                 body: customNotificationBody ?? defaultBody,
-                userInfo: NotificationManager.userInfo(taskId: taskId)
+                taskId: taskId,
+                succeeded: succeeded
             )
         }
         if alertRules.push?.fires(succeeded: succeeded, hasOutput: hasOutput) == true {

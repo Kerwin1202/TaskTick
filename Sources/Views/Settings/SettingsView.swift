@@ -14,6 +14,7 @@ struct SettingsView: View {
 
     // Notifications
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
+    @AppStorage(TaskResultNotificationStyle.settingKey) private var taskResultNotificationStyle: TaskResultNotificationStyle = .system
     @AppStorage(MenuBarHideNotice.settingKey) private var notifyOnHideToMenuBar = true
 
     // Logs
@@ -215,6 +216,12 @@ struct SettingsView: View {
         Form {
             Section {
                 Toggle(L10n.tr("settings.notifications.enable"), isOn: $notificationsEnabled)
+
+                Picker(L10n.tr("settings.notifications.result_style"), selection: $taskResultNotificationStyle) {
+                    Text(L10n.tr("settings.notifications.result_style.system")).tag(TaskResultNotificationStyle.system)
+                    Text(L10n.tr("settings.notifications.result_style.bottom")).tag(TaskResultNotificationStyle.bottom)
+                }
+                .disabled(!notificationsEnabled)
             } header: {
                 Text(L10n.tr("settings.notifications"))
             } footer: {

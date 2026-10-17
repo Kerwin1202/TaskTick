@@ -4,7 +4,17 @@ import SwiftData
 import UserNotifications
 import TaskTickCore
 
-/// Manages system notifications for task execution results.
+enum TaskResultNotificationStyle: String {
+    case system, bottom
+
+    static let settingKey = "taskResultNotificationStyle"
+
+    static func current(_ defaults: UserDefaults = .standard) -> Self {
+        defaults.string(forKey: settingKey).flatMap(Self.init(rawValue:)) ?? .system
+    }
+}
+
+/// Manages task result notifications and other system notifications.
 final class NotificationManager: NSObject, @unchecked Sendable {
 
     static let shared = NotificationManager()
@@ -29,6 +39,29 @@ final class NotificationManager: NSObject, @unchecked Sendable {
     private var isAvailable = false
 
     private override init() { super.init() }
+
+    @MainActor
+    func sendTaskResult(title: String, body: String, taskId: UUID, succeeded: Bool) {
+        if let toast = Self.taskResultToast(title: title, body: body, succeeded: succeeded) {
+            ToastCenter.shared.show(toast) {
+                Self.selectInMainWindow(taskId: taskId)
+                AppDelegate.bringMainWindowForward()
+            }
+        } else {
+            sendNotification(title: title, body: body, userInfo: Self.userInfo(taskId: taskId))
+        }
+    }
+
+    /// Nil keeps the existing system notification path, including for older users.
+    static func taskResultToast(
+        title: String,
+        body: String,
+        succeeded: Bool,
+        defaults: UserDefaults = .standard
+    ) -> ToastDescriptor? {
+        guard TaskResultNotificationStyle.current(defaults) == .bottom else { return nil }
+        return ToastDescriptor(message: body, icon: succeeded ? .success : .error, duration: 5, title: title)
+    }
 
     func requestPermission() {
         // UNUserNotificationCenter requires a valid app bundle with bundle identifier.

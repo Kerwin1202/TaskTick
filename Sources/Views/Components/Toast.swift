@@ -11,11 +11,13 @@ struct ToastDescriptor: Equatable {
     let icon: ToastIcon
     /// Auto-dismiss interval. Nil = sticky (caller must dismiss manually).
     let duration: TimeInterval?
+    let title: String?
 
-    init(message: String, icon: ToastIcon = .none, duration: TimeInterval? = 1.6) {
+    init(message: String, icon: ToastIcon = .none, duration: TimeInterval? = 1.6, title: String? = nil) {
         self.message = message
         self.icon = icon
         self.duration = duration
+        self.title = title
     }
 }
 
@@ -62,22 +64,32 @@ struct ToastView: View {
                     .font(.system(size: 14))
                     .foregroundStyle(descriptor.icon.tint(isDark: isDark))
             }
-            Text(descriptor.message)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(textColor)
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 4) {
+                if let title = descriptor.title {
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .lineLimit(1)
+                }
+                if !descriptor.message.isEmpty {
+                    Text(descriptor.message)
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(descriptor.title == nil ? 1 : 3)
+                }
+            }
+            .foregroundStyle(textColor)
+            .frame(maxWidth: descriptor.title == nil ? nil : 420, alignment: .leading)
         }
         .frame(minHeight: 22)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(
-            Capsule()
+            RoundedRectangle(cornerRadius: descriptor.title == nil ? 20 : 16)
                 .fill(panelFill)
                 .shadow(color: shadowColor, radius: 18, y: 6)
                 .shadow(color: shadowColor.opacity(0.5), radius: 4, y: 1)
         )
-        .overlay(Capsule().stroke(panelStroke, lineWidth: 0.5))
-        .fixedSize()
+        .overlay(RoundedRectangle(cornerRadius: descriptor.title == nil ? 20 : 16).stroke(panelStroke, lineWidth: 0.5))
+        .fixedSize(horizontal: descriptor.title == nil, vertical: true)
     }
 
     private var panelFill: Color {
@@ -108,12 +120,18 @@ final class ToastCenter {
 
     private static let canvasSize = NSSize(width: 520, height: 160)
 
-    func show(_ descriptor: ToastDescriptor) {
+    func show(_ descriptor: ToastDescriptor, onTap: (() -> Void)? = nil) {
         autoDismissTask?.cancel()
         tearDownTask?.cancel()
         ensurePanel()
         positionPanel()
         panel?.orderFrontRegardless()
+        state.onTap = onTap.map { action in
+            { [weak self] in
+                self?.dismiss()
+                action()
+            }
+        }
 
         withAnimation(.spring(response: 0.48, dampingFraction: 0.7)) {
             state.current = descriptor
@@ -138,6 +156,7 @@ final class ToastCenter {
     func dismiss() {
         autoDismissTask?.cancel()
         autoDismissTask = nil
+        state.onTap = nil
         guard state.current != nil else { return }
         withAnimation(.easeIn(duration: 0.26)) { state.current = nil }
         tearDownTask = Task { [weak self] in
@@ -158,6 +177,7 @@ final class ToastCenter {
         autoDismissTask?.cancel()
         tearDownTask?.cancel()
         state.current = nil
+        state.onTap = nil
         panel?.orderOut(nil)
         panel = nil
     }
@@ -198,6 +218,7 @@ final class ToastCenter {
 @MainActor
 final class ToastCenterState: ObservableObject {
     @Published var current: ToastDescriptor?
+    var onTap: (() -> Void)?
 }
 
 struct ToastHost: View {
@@ -209,6 +230,7 @@ struct ToastHost: View {
             Spacer(minLength: 0)
             if let descriptor = state.current {
                 ToastView(descriptor: descriptor)
+                    .onTapGesture { state.onTap?() }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .id(descriptor.message)
             }

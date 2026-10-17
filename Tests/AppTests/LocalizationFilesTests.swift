@@ -28,6 +28,12 @@ struct LocalizationFilesTests {
             let file = lproj.appendingPathComponent("Localizable.strings")
             let parsed = NSDictionary(contentsOf: file)
             #expect(parsed != nil, "\(lproj.lastPathComponent)/Localizable.strings 无法解析（整个语言会在运行时静默失效）")
+            for key in ["settings.notifications.result_style",
+                        "settings.notifications.result_style.system",
+                        "settings.notifications.result_style.bottom"] {
+                #expect((parsed?[key] as? String)?.isEmpty == false,
+                        "\(lproj.lastPathComponent) 缺少通知方式文案 \(key)")
+            }
         }
     }
 }

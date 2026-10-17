@@ -387,6 +387,9 @@
 "settings.notifications" = "通知";
 "settings.notifications.section" = "通知設定";
 "settings.notifications.enable" = "通知を有効にする";
+"settings.notifications.result_style" = "実行結果の通知方法";
+"settings.notifications.result_style.system" = "システム通知";
+"settings.notifications.result_style.bottom" = "画面下部中央";
 "settings.notifications.on_success" = "タスク成功時に通知";
 "settings.notifications.on_failure" = "タスク失敗時に通知";
 "settings.notifications.hint" = "これはグローバルスイッチです。無効にすると、個別タスクで通知が有効でも通知は送信されません。";

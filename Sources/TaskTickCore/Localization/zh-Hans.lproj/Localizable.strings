@@ -387,6 +387,9 @@
 "settings.notifications" = "通知";
 "settings.notifications.section" = "通知设置";
 "settings.notifications.enable" = "启用通知";
+"settings.notifications.result_style" = "运行结果通知方式";
+"settings.notifications.result_style.system" = "系统通知";
+"settings.notifications.result_style.bottom" = "屏幕底部居中";
 "settings.notifications.on_success" = "任务成功时通知";
 "settings.notifications.on_failure" = "任务失败时通知";
 "settings.notifications.hint" = "这是全局开关。关闭后，即使任务单独开启了通知，也不会发送提醒。";

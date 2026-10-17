@@ -387,6 +387,9 @@
 "settings.notifications" = "Уведомления";
 "settings.notifications.section" = "Настройки уведомлений";
 "settings.notifications.enable" = "Включить уведомления";
+"settings.notifications.result_style" = "Уведомление о результате";
+"settings.notifications.result_style.system" = "Системное уведомление";
+"settings.notifications.result_style.bottom" = "Внизу по центру экрана";
 "settings.notifications.on_success" = "Уведомлять при успехе";
 "settings.notifications.on_failure" = "Уведомлять при ошибке";
 "settings.notifications.hint" = "Это глобальный переключатель. При отключении уведомления не будут отправляться, даже если они включены для отдельных задач.";

@@ -387,6 +387,9 @@
 "settings.notifications" = "Notifications";
 "settings.notifications.section" = "Notification Settings";
 "settings.notifications.enable" = "Enable Notifications";
+"settings.notifications.result_style" = "Task Result Notification";
+"settings.notifications.result_style.system" = "System Notification";
+"settings.notifications.result_style.bottom" = "Bottom Center of Screen";
 "settings.notifications.on_success" = "Notify on Task Success";
 "settings.notifications.on_failure" = "Notify on Task Failure";
 "settings.notifications.hint" = "This is a global switch. When disabled, no task notifications will be sent even if individual tasks have notifications enabled.";

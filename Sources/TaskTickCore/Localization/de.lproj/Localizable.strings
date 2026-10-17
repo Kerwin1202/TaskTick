@@ -387,6 +387,9 @@
 "settings.notifications" = "Benachrichtigungen";
 "settings.notifications.section" = "Benachrichtigungseinstellungen";
 "settings.notifications.enable" = "Benachrichtigungen aktivieren";
+"settings.notifications.result_style" = "Benachrichtigung bei Aufgabenende";
+"settings.notifications.result_style.system" = "Systembenachrichtigung";
+"settings.notifications.result_style.bottom" = "Unten in der Bildschirmmitte";
 "settings.notifications.on_success" = "Bei Aufgabenerfolg benachrichtigen";
 "settings.notifications.on_failure" = "Bei Aufgabenfehler benachrichtigen";
 "settings.notifications.hint" = "Dies ist ein globaler Schalter. Wenn deaktiviert, werden keine Aufgabenbenachrichtigungen gesendet, auch wenn einzelne Aufgaben Benachrichtigungen aktiviert haben.";

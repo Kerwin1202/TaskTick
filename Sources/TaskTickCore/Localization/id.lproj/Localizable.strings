@@ -387,6 +387,9 @@
 "settings.notifications" = "Notifikasi";
 "settings.notifications.section" = "Pengaturan Notifikasi";
 "settings.notifications.enable" = "Aktifkan Notifikasi";
+"settings.notifications.result_style" = "Notifikasi Hasil Tugas";
+"settings.notifications.result_style.system" = "Notifikasi Sistem";
+"settings.notifications.result_style.bottom" = "Tengah Bawah Layar";
 "settings.notifications.on_success" = "Notifikasi saat Tugas Berhasil";
 "settings.notifications.on_failure" = "Notifikasi saat Tugas Gagal";
 "settings.notifications.hint" = "Ini adalah pengaturan global. Jika dinonaktifkan, tidak ada notifikasi tugas yang akan dikirim meskipun tugas individual memiliki notifikasi yang diaktifkan.";

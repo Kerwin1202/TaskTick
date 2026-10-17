@@ -355,6 +355,9 @@
 "settings.notifications" = "Notifications";
 "settings.notifications.section" = "Paramètres de notification";
 "settings.notifications.enable" = "Activer les notifications";
+"settings.notifications.result_style" = "Notification du résultat";
+"settings.notifications.result_style.system" = "Notification système";
+"settings.notifications.result_style.bottom" = "En bas au centre de l’écran";
 "settings.notifications.on_success" = "Notifier en cas de succès";
 "settings.notifications.on_failure" = "Notifier en cas d'échec";
 "settings.notifications.hint" = "Ceci est un paramètre global. Lorsqu'il est désactivé, aucune notification ne sera envoyée même si des tâches individuelles ont les notifications activées.";

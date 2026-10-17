@@ -39,7 +39,7 @@
 - **Script Execution** — inline scripts or local files (.sh, .py, .rb, .js)
 - **Script Templates** — built-in templates (DB backup, log cleanup, health check, etc.) + create and manage your own
 - **Execution Logs** — stdout/stderr capture, exit codes, duration tracking
-- **Notifications** — macOS system notifications on success/failure (per task)
+- **Notifications** — Per-task success/failure alerts; choose system notifications (default) or bottom-center screen notifications in Settings
 - **Crontab Import** — import from system crontab with one click
 - **i18n** — English & Simplified Chinese, switchable in-app
 - **Auto Updates** — checks GitHub Releases for new versions

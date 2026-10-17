@@ -387,6 +387,9 @@
 "settings.notifications" = "Notificaciones";
 "settings.notifications.section" = "Configuración de notificaciones";
 "settings.notifications.enable" = "Activar notificaciones";
+"settings.notifications.result_style" = "Notificación del resultado";
+"settings.notifications.result_style.system" = "Notificación del sistema";
+"settings.notifications.result_style.bottom" = "Parte inferior central de la pantalla";
 "settings.notifications.on_success" = "Notificar al completar tarea";
 "settings.notifications.on_failure" = "Notificar al fallar tarea";
 "settings.notifications.hint" = "Este es un interruptor global. Cuando está desactivado, no se enviarán notificaciones de ninguna tarea, incluso si las tareas individuales tienen las notificaciones activadas.";

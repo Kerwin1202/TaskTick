@@ -387,6 +387,9 @@
 "settings.notifications" = "Notifiche";
 "settings.notifications.section" = "Impostazioni notifiche";
 "settings.notifications.enable" = "Abilita notifiche";
+"settings.notifications.result_style" = "Notifica del risultato";
+"settings.notifications.result_style.system" = "Notifica di sistema";
+"settings.notifications.result_style.bottom" = "In basso al centro dello schermo";
 "settings.notifications.on_success" = "Notifica in caso di successo";
 "settings.notifications.on_failure" = "Notifica in caso di errore";
 "settings.notifications.hint" = "Questo è un interruttore globale. Se disattivato, nessuna notifica verrà inviata anche se le singole attività hanno le notifiche abilitate.";
