@@ -81,7 +81,7 @@ struct QuickLauncherView: View {
         }
 
         let scored: [(task: ScheduledTask, score: Int)] = enabled.compactMap { task in
-            guard let s = FuzzyMatch.score(query: trimmed, candidate: task.name) else { return nil }
+            guard let s = TaskNameSearch.score(query: trimmed, candidate: task.name) else { return nil }
             return (task, s)
         }
 

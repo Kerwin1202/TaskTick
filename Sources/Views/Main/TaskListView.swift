@@ -38,7 +38,7 @@ struct TaskListView: View {
             case .enabled: task.isEnabled
             case .disabled: !task.isEnabled
             }
-            let matchesSearch = searchText.isEmpty || task.name.localizedCaseInsensitiveContains(searchText)
+            let matchesSearch = TaskNameSearch.matches(query: searchText, candidate: task.name)
             return matchesFilter && matchesSearch
         }
         let option = TaskSortOption(rawValue: sortOptionRaw) ?? .lastRunDesc
