@@ -9,8 +9,8 @@ private enum QuickLauncherAction: Int, CaseIterable, Hashable {
     case restart
 }
 
-/// Spotlight-style search panel content. Tab selects an action for the
-/// highlighted task; Enter performs that action.
+/// Spotlight-style search panel content. Tab and left/right select an action
+/// for the highlighted task; Enter performs that action.
 struct QuickLauncherView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ScheduledTask.createdAt, order: .reverse) private var tasks: [ScheduledTask]
@@ -174,6 +174,18 @@ struct QuickLauncherView: View {
             if Int(event.keyCode) == 48, tabModifiersAllowed, selectedTask != nil {
                 moveAction(event.modifierFlags.contains(.shift) ? -1 : 1)
                 return nil // tab / shift-tab
+            }
+
+            let actionArrowModifiersAllowed = !cmdHeld
+                && !event.modifierFlags.contains(.option)
+                && !event.modifierFlags.contains(.control)
+                && !event.modifierFlags.contains(.shift)
+            if selectedTask != nil, actionArrowModifiersAllowed {
+                switch Int(event.keyCode) {
+                case 123: moveAction(-1); return nil // left
+                case 124: moveAction(1); return nil  // right
+                default: break
+                }
             }
 
             switch Int(event.keyCode) {
